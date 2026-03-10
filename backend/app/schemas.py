@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
 
 
@@ -124,4 +124,4 @@ class Result(BaseModel):
     """统一响应模型"""
     code: int = 200
     message: str = "success"
-    data: Optional[any] = None
+    data: Optional[Any] = None
