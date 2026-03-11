@@ -1,7 +1,14 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 初始化测试数据
 """
+import sys
+import io
+
+# 设置stdout编码为UTF-8
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import User, Question, Knowledge, Feedback
@@ -45,7 +52,7 @@ def init_users(db: Session):
     
     db.add_all(users)
     db.commit()
-    print("✓ 用户数据初始化完成")
+    print("[OK] 用户数据初始化完成")
     return users
 
 
@@ -116,7 +123,7 @@ def init_knowledge(db: Session):
     
     db.add_all(knowledges)
     db.commit()
-    print("✓ 知识库数据初始化完成")
+    print("[OK] 知识库数据初始化完成")
     return knowledges
 
 
@@ -157,7 +164,7 @@ def init_questions(db: Session, users: list):
     
     db.add_all(questions)
     db.commit()
-    print("✓ 问答数据初始化完成")
+    print("[OK] 问答数据初始化完成")
     return questions
 
 
@@ -186,7 +193,7 @@ def init_feedbacks(db: Session, questions: list, users: list):
     
     db.add_all(feedbacks)
     db.commit()
-    print("✓ 反馈数据初始化完成")
+    print("[OK] 反馈数据初始化完成")
 
 
 if __name__ == "__main__":
@@ -198,7 +205,7 @@ if __name__ == "__main__":
     try:
         # 检查是否已有数据
         if db.query(User).count() > 0:
-            print("⚠ 数据库中已存在数据，请先运行 reset_data.py 清空数据")
+            print("[WARN] 数据库中已存在数据，请先运行 reset_data.py 清空数据")
             db.close()
             exit(1)
         

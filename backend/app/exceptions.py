@@ -2,12 +2,14 @@
 自定义异常处理
 """
 
-from fastapi import HTTPException, status, Request
+from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.requests import Request
 from sqlalchemy.exc import SQLAlchemyError
 
 
-async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+async def sqlalchemy_exception_handler(_request: Request, exc: SQLAlchemyError):
     """处理SQLAlchemy数据库异常"""
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -18,7 +20,7 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
     )
 
 
-async def http_exception_handler(request: Request, exc: HTTPException):
+async def http_exception_handler(_request: Request, exc: HTTPException):
     """处理HTTP异常"""
     return JSONResponse(
         status_code=exc.status_code,
@@ -29,9 +31,36 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
+def validation_exception_handler(_request: Request, exc: RequestValidationError):
+    """处理请求验证异常"""
+    errors: list[dict[str, str]] = []
+    for error in exc.errors():  # type: ignore
+        # type: ignore
+        error_loc = error["loc"]  # type: ignore
+        error_msg = error["msg"]  # type: ignore
+        error_type = error["type"]  # type: ignore
+
+        errors.append({
+            "field": ".".join(str(loc) for loc in error_loc),  # type: ignore
+            "message": error_msg,
+            "type": error_type
+        })
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": "请求参数验证失败",
+            "errors": errors
+        }
+    )
+
+
 class ServiceException(Exception):
     """业务异常基类"""
-    def __init__(self, message: str, code: int = 400):
+    message: str
+    code: int
+
+    def __init__(self, message: str, code: int = 400) -> None:
         self.message = message
         self.code = code
         super().__init__(self.message)

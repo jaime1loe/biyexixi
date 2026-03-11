@@ -1,0 +1,10 @@
+{
+  "typeCheckingMode": "standard",
+  "ignore": [
+    "backend/main.py"
+  ],
+  "reportUnknownMemberType": "warning",
+  "reportUnknownArgumentType": "warning",
+  "reportAny": "warning",
+  "reportArgumentType": "warning"
+}
