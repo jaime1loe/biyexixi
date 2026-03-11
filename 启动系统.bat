@@ -25,12 +25,19 @@ if errorlevel 1 (
 )
 
 echo 检查数据库连接...
-python -c "import sys; sys.path.insert(0, '.'); from app.config import settings; print('Database:', settings.DB_NAME)" 2>nul
+python full_test.py >nul 2>&1
 if errorlevel 1 (
-    echo [提示] 请确保MySQL服务已启动，且密码为12345678
+    echo [错误] 数据库连接失败！
+    echo.
+    echo 运行详细检查...
+    echo.
+    python full_test.py
+    echo.
+    echo 请根据上述提示解决问题后重试
     pause
     exit /b 1
 )
+echo [OK] 数据库连接检查通过
 
 echo.
 echo [2/3] 启动后端服务...

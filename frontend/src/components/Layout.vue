@@ -12,6 +12,10 @@
         text-color="#bfcbd9"
         active-text-color="#409EFF"
       >
+        <el-menu-item index="/home">
+          <el-icon><HomeFilled /></el-icon>
+          <span>首页</span>
+        </el-menu-item>
         <el-menu-item index="/chat">
           <el-icon><ChatDotRound /></el-icon>
           <span>智能问答</span>
@@ -24,9 +28,21 @@
           <el-icon><Document /></el-icon>
           <span>知识库管理</span>
         </el-menu-item>
+        <el-menu-item index="/favorites">
+          <el-icon><Star /></el-icon>
+          <span>我的收藏</span>
+        </el-menu-item>
+        <el-menu-item index="/campus">
+          <el-icon><School /></el-icon>
+          <span>校园服务</span>
+        </el-menu-item>
         <el-menu-item index="/dashboard">
           <el-icon><DataAnalysis /></el-icon>
           <span>数据统计</span>
+        </el-menu-item>
+        <el-menu-item v-if="isAdmin" index="/admin">
+          <el-icon><Management /></el-icon>
+          <span>管理后台</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -84,7 +100,11 @@ import {
   ArrowDown,
   UserFilled,
   Setting,
-  SwitchButton
+  SwitchButton,
+  HomeFilled,
+  Star,
+  School,
+  Management
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 
@@ -95,6 +115,7 @@ const userStore = useUserStore()
 const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta.title as string || '智能问答系统')
 const userInfo = computed(() => userStore.userInfo)
+const isAdmin = computed(() => userInfo.value?.role === 'admin')
 
 async function handleCommand(command: string) {
   switch (command) {

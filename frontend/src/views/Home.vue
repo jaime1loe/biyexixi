@@ -139,6 +139,109 @@
       </el-row>
     </div>
 
+    <!-- 热门问题 -->
+    <div class="popular-section">
+      <h2 class="section-title">
+        <el-icon><TrendCharts /></el-icon>
+        热门问题
+      </h2>
+      <el-empty v-if="popularQuestions.length === 0" description="暂无热门问题" />
+      <div v-else class="popular-grid">
+        <div
+          v-for="question in popularQuestions"
+          :key="question.id"
+          class="popular-card"
+          @click="viewQuestion(question)"
+        >
+          <div class="popular-icon">
+            <el-icon><QuestionFilled /></el-icon>
+          </div>
+          <div class="popular-content">
+            <h4>{{ question.question }}</h4>
+            <div class="popular-meta">
+              <span class="views">
+                <el-icon><View /></el-icon>
+                {{ question.views }} 次浏览
+              </span>
+              <span class="time">{{ formatTime(question.created_at) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 快速提问 -->
+    <div class="quick-ask-section">
+      <h2 class="section-title">
+        <el-icon><ChatDotRound /></el-icon>
+        快速提问
+      </h2>
+      <el-card class="ask-card">
+        <el-input
+          v-model="quickQuestion"
+          type="textarea"
+          :rows="3"
+          placeholder="在这里输入您的问题，快速获取答案..."
+          maxlength="200"
+          show-word-limit
+        />
+        <div class="ask-actions">
+          <el-button type="primary" :icon="Position" @click="handleQuickAsk">
+            提交问题
+          </el-button>
+          <el-button :icon="List" @click="goToChat">
+            查看历史
+          </el-button>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 功能特色 -->
+    <div class="features-section">
+      <h2 class="section-title">
+        <el-icon><MagicStick /></el-icon>
+        功能特色
+      </h2>
+      <el-row :gutter="20">
+        <el-col :xs="24" :sm="12" :md="6">
+          <div class="feature-item">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <el-icon><ChatLineRound /></el-icon>
+            </div>
+            <h3>智能问答</h3>
+            <p>基于大模型AI，快速准确回答您的问题</p>
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <div class="feature-item">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <el-icon><Collection /></el-icon>
+            </div>
+            <h3>知识库管理</h3>
+            <p>上传管理知识文档，构建专属知识库</p>
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <div class="feature-item">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <el-icon><School /></el-icon>
+            </div>
+            <h3>校园服务</h3>
+            <p>空教室查询、成绩查询、图书馆一站式服务</p>
+          </div>
+        </el-col>
+        <el-col :xs="24" :sm="12" :md="6">
+          <div class="feature-item">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+              <el-icon><StarFilled /></el-icon>
+            </div>
+            <h3>收藏管理</h3>
+            <p>收藏有价值的问题和答案，随时查看</p>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+
     <!-- 最新通知 -->
     <div class="notifications-section">
       <h2 class="section-title">
@@ -178,6 +281,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
   ChatLineRound,
   Document,
@@ -194,10 +298,15 @@ import {
   Grid,
   QuestionFilled,
   Reading,
-  DataAnalysis
+  DataAnalysis,
+  TrendCharts,
+  View,
+  Position,
+  List,
+  MagicStick
 } from '@element-plus/icons-vue'
-import { dashboardApi } from '@/api/dashboard'
-import { notificationApi } from '@/api/notifications'
+import { statisticsApi } from '@/api/dashboard'
+import { notificationsApi } from '@/api/notifications'
 
 const router = useRouter()
 
@@ -209,6 +318,8 @@ const stats = ref({
 })
 
 const notifications = ref<any[]>([])
+const popularQuestions = ref<any[]>([])
+const quickQuestion = ref('')
 
 function goToChat() {
   router.push('/chat')
@@ -220,6 +331,18 @@ function goToKnowledge() {
 
 function goToPath(path: string) {
   router.push(path)
+}
+
+function viewQuestion(question: any) {
+  router.push({ path: '/chat', query: { q: question.question } })
+}
+
+function handleQuickAsk() {
+  if (!quickQuestion.value.trim()) {
+    ElMessage.warning('请输入问题内容')
+    return
+  }
+  router.push({ path: '/chat', query: { q: quickQuestion.value.trim() } })
 }
 
 function formatTime(timestamp: string): string {
@@ -236,13 +359,12 @@ function formatTime(timestamp: string): string {
 }
 
 async function downloadNotification(notification: any) {
-  // 实现下载逻辑
   console.log('下载通知附件:', notification)
 }
 
 async function loadStats() {
   try {
-    const data = await dashboardApi.getOverview()
+    const data = await statisticsApi.getOverview()
     stats.value = {
       userCount: data.user_count || 0,
       questionCount: data.question_count || 0,
@@ -256,16 +378,53 @@ async function loadStats() {
 
 async function loadNotifications() {
   try {
-    const data = await notificationApi.getList({ skip: 0, limit: 5 })
-    notifications.value = data
+    const data = await notificationsApi.getAll()
+    notifications.value = Array.isArray(data) ? data.slice(0, 5) : []
   } catch (error) {
     console.error('加载通知失败:', error)
+  }
+}
+
+async function loadPopularQuestions() {
+  try {
+    const data = await statisticsApi.getPopularQuestions(8)
+    popularQuestions.value = data || []
+  } catch (error) {
+    console.error('加载热门问题失败:', error)
+    // 设置一些演示数据
+    popularQuestions.value = [
+        {
+        id: 1,
+        question: '如何申请奖学金？',
+        views: 1256,
+        created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+      },
+      {
+        id: 2,
+        question: '图书馆开放时间是什么时候？',
+        views: 987,
+        created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+      },
+      {
+        id: 3,
+        question: '如何查询期末考试成绩？',
+        views: 854,
+        created_at: new Date(Date.now() - 86400000 * 5).toISOString()
+      },
+      {
+        id: 4,
+        question: '选课系统什么时候开放？',
+        views: 723,
+        created_at: new Date(Date.now() - 86400000 * 7).toISOString()
+      }
+    ]
   }
 }
 
 onMounted(() => {
   loadStats()
   loadNotifications()
+  loadPopularQuestions()
 })
 </script>
 
@@ -501,6 +660,150 @@ onMounted(() => {
 .stat-label {
   font-size: 14px;
   color: #909399;
+}
+
+/* 热门问题 */
+.popular-section {
+  margin-bottom: 40px;
+}
+
+.popular-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.popular-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+}
+
+.popular-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+.popular-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.popular-content {
+  flex: 1;
+}
+
+.popular-content h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.popular-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #909399;
+}
+
+.popular-meta .views {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.popular-meta .views .el-icon {
+  font-size: 14px;
+}
+
+.popular-meta .time {
+  margin-left: auto;
+}
+
+/* 快速提问 */
+.quick-ask-section {
+  margin-bottom: 40px;
+}
+
+.ask-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+.ask-card :deep(.el-textarea__inner) {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ask-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+/* 功能特色 */
+.features-section {
+  margin-bottom: 40px;
+}
+
+.feature-item {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  height: 100%;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+  margin: 0 auto 16px;
+}
+
+.feature-item h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 12px 0;
+}
+
+.feature-item p {
+  font-size: 14px;
+  color: #909399;
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* 通知 */

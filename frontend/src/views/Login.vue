@@ -263,7 +263,7 @@ async function handleLogin() {
     })
 
     ElMessage.success('登录成功!')
-    router.push('/chat')
+    router.push('/home')
   } catch (error: any) {
     console.error('登录失败:', error)
     const errorMessage = error.response?.data?.detail || '登录失败，请检查用户名和密码'

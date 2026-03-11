@@ -17,7 +17,7 @@ if not exist "venv" (
 )
 
 REM 检查数据库是否存在
-python -c "import pymysql; conn = pymysql.connect(host='localhost', user='root', password=''); conn.cursor().execute('CREATE DATABASE IF NOT EXISTS qa_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci')" 2>nul
+python -c "import pymysql; conn = pymysql.connect(host='localhost', user='root', password='12345678'); conn.cursor().execute('CREATE DATABASE IF NOT EXISTS qa_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci')" 2>nul
 
 echo [提示] 正在启动服务...
 echo.

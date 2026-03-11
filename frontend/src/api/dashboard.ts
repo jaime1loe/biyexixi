@@ -40,5 +40,14 @@ export const statisticsApi = {
     return request.get<any, any[]>('/statistics/top-questions', {
       params: { limit }
     })
+  },
+
+  getPopularQuestions: (limit: number = 8) => {
+    return request.get<any, any[]>('/statistics/popular-questions', {
+      params: { limit }
+    })
   }
 }
+
+// 兼容旧的命名方式
+export const dashboardApi = statisticsApi
