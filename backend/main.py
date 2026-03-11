@@ -69,8 +69,8 @@ app.include_router(campus.router, prefix="/api/campus", tags=["校园服务"])
 async def root():
     """根路径接口"""
     return {
-        "app": config.settings.APP_NAME,
-        "version": config.settings.APP_VERSION,
+        "app": settings.APP_NAME,
+        "version": settings.APP_VERSION,
         "status": "running"
     }
 

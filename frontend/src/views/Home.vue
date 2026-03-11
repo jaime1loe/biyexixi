@@ -306,7 +306,7 @@ import {
   MagicStick
 } from '@element-plus/icons-vue'
 import { statisticsApi } from '@/api/dashboard'
-import { notificationsApi } from '@/api/notifications'
+import { notificationApi } from '@/api/notifications'
 
 const router = useRouter()
 
@@ -378,7 +378,7 @@ async function loadStats() {
 
 async function loadNotifications() {
   try {
-    const data = await notificationsApi.getAll()
+    const data = await notificationApi.getList()
     notifications.value = Array.isArray(data) ? data.slice(0, 5) : []
   } catch (error) {
     console.error('加载通知失败:', error)

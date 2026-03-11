@@ -19,7 +19,7 @@ try:
         host='localhost',
         port=3306,
         user='root',
-        password='12345678',
+        password='20040618',
         connect_timeout=5
     )
     print("   Connected to MySQL server successfully!")
@@ -28,7 +28,7 @@ except Exception as e:
     print(f"   ERROR: {e}")
     print("\nPlease check:")
     print("   - Is MySQL service running?")
-    print("   - Is the password correct? (12345678)")
+    print("   - Is the password correct? (20040618)")
     sys.exit(1)
 
 # Test 3: Check if database exists
@@ -38,7 +38,7 @@ try:
         host='localhost',
         port=3306,
         user='root',
-        password='12345678',
+        password='20040618',
         database='qa_system',
         connect_timeout=5
     )

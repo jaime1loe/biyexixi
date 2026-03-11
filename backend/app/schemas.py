@@ -70,9 +70,13 @@ class QuestionCreate(QuestionBase):
 class QuestionResponse(QuestionBase):
     """问题响应模型"""
     id: int
+    user_id: int
     answer: Optional[str] = None
+    category: Optional[str] = None
+    views: Optional[int] = 0
+    is_public: Optional[int] = 1
     created_at: datetime
-    user: UserResponse
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -88,11 +92,11 @@ class FeedbackCreate(BaseModel):
 class FeedbackResponse(BaseModel):
     """反馈响应模型"""
     id: int
+    user_id: int
+    question_id: int
     rating: int
     comment: Optional[str]
     created_at: datetime
-    user: UserResponse
-    question: QuestionResponse
 
     class Config:
         from_attributes = True
@@ -158,7 +162,6 @@ class FavoriteResponse(BaseModel):
     id: int
     user_id: int
     question_id: int
-    question: Optional[QuestionResponse] = None
     created_at: datetime
 
     class Config:

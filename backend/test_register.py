@@ -1,44 +1,60 @@
-"""
-测试注册接口
-"""
 import sys
+import io
+
+# 设置输出编码
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 sys.path.insert(0, '.')
+
+from app.database import SessionLocal
+from app.models import User
+from app.schemas import UserCreate
+from app.utils import get_password_hash
 
 print("=" * 60)
 print("测试用户注册")
 print("=" * 60)
 
 try:
-    from app.database import SessionLocal
-    from app.models import User
-    from app.schemas import UserCreate
-    from app.utils import get_password_hash
-
+    # 创建数据库会话
     db = SessionLocal()
 
-    # 测试1: 创建用户对象
-    print("\n[1/3] 测试创建User对象...")
+    # 模拟注册数据
     test_user = UserCreate(
-        username="testuser",
+        username="testuser999",
         password="123456",
         real_name="测试用户",
-        student_id="S2024001",
-        email="test@example.com",
-        role="student",
-        phone="13800138000",
-        department="计算机学院",
-        major="计算机科学",
-        class_name="计科1班"
+        student_id="202403111999",
+        email="test999@example.com",
+        role="student"
     )
-    print("  OK - UserCreate对象创建成功")
+
+    print(f"\n尝试创建用户:")
     print(f"  用户名: {test_user.username}")
-    print(f"  包含字段: {test_user.model_dump().keys()}")
+    print(f"  真实姓名: {test_user.real_name}")
+    print(f"  学号: {test_user.student_id}")
+    print(f"  邮箱: {test_user.email}")
+    print(f"  角色: {test_user.role}")
 
-    # 测试2: 创建数据库用户对象
-    print("\n[2/3] 测试创建User数据库对象...")
+    # 检查用户名是否存在
+    existing_user = db.query(User).filter(User.username == test_user.username).first()
+    if existing_user:
+        print(f"\n[错误] 用户名 {test_user.username} 已存在")
+        db.close()
+        sys.exit(1)
+
+    # 检查学号是否存在
+    if test_user.student_id:
+        existing_student = db.query(User).filter(User.student_id == test_user.student_id).first()
+        if existing_student:
+            print(f"\n[错误] 学号 {test_user.student_id} 已存在")
+            db.close()
+            sys.exit(1)
+
+    # 创建新用户
     password_hash = get_password_hash(test_user.password)
-    print(f"  密码哈希生成成功: {password_hash[:20]}...")
-
     db_user = User(
         username=test_user.username,
         password_hash=password_hash,
@@ -47,24 +63,24 @@ try:
         email=test_user.email,
         role=test_user.role
     )
-    print("  OK - User对象创建成功")
 
-    # 测试3: 保存到数据库
-    print("\n[3/3] 测试保存到数据库...")
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    print(f"  OK - 用户保存成功，ID: {db_user.id}")
 
-    print("\n" + "=" * 60)
-    print("所有测试通过！")
-    print("=" * 60)
+    print(f"\n[成功] 用户创建成功!")
+    print(f"  用户ID: {db_user.id}")
+    print(f"  创建时间: {db_user.created_at}")
+
+    db.close()
 
 except Exception as e:
-    print(f"\n[错误] {e}")
+    print(f"\n[错误] 注册失败: {e}")
     import traceback
     traceback.print_exc()
+    db.close()
+    sys.exit(1)
 
-finally:
-    if 'db' in locals():
-        db.close()
+print("\n" + "=" * 60)
+print("测试完成")
+print("=" * 60)

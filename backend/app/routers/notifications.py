@@ -67,10 +67,9 @@ async def get_notifications(
     limit: int = 20,
     category: Optional[str] = None,
     is_important: Optional[bool] = None,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-    """获取通知列表"""
+    """获取通知列表（公开访问）"""
     query = db.query(Notification)
 
     if category:

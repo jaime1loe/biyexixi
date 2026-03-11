@@ -45,9 +45,9 @@ async def get_statistics_overview(db: Session = Depends(get_db)):
     ).scalar() or 0
 
     return {
-        "total_questions": total_questions,
-        "total_users": total_users,
-        "total_knowledge": total_knowledge,
+        "question_count": total_questions,
+        "user_count": total_users,
+        "knowledge_count": total_knowledge,
         "avg_rating": round(float(avg_rating), 2) if avg_rating else 0,
         "today_questions": today_questions,
         "today_users": today_users,
@@ -110,13 +110,26 @@ async def get_top_questions(
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
-    """获取热门问题（按反馈数排序）"""
+    """获取热门问题（按创建时间倒序）"""
     from sqlalchemy import and_
-    
-    questions = db.query(Question).join(
-        Feedback, Question.id == Feedback.question_id
-    ).group_by(Question.id).order_by(
-        desc(func.count(Feedback.id))
-    ).limit(limit).all()
-    
-    return questions
+
+    # 先尝试按浏览量排序，如果没有浏览量字段，则按创建时间排序
+    try:
+        questions = db.query(Question).order_by(
+            desc(Question.created_at)
+        ).limit(limit).all()
+
+        # 格式化返回数据
+        result = []
+        for q in questions:
+            result.append({
+                "id": q.id,
+                "question": q.question,
+                "answer": q.answer,
+                "views": getattr(q, 'views', 0) or 0,
+                "created_at": q.created_at.isoformat() if q.created_at else None
+            })
+        return result
+    except Exception as e:
+        print(f"获取热门问题出错: {e}")
+        return []

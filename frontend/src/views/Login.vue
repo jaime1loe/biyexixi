@@ -41,7 +41,7 @@
             <el-form-item>
               <div class="form-options">
                 <el-checkbox v-model="rememberMe">记住密码</el-checkbox>
-                <el-link type="primary" :underline="false">忘记密码?</el-link>
+                <el-link type="primary" underline="never">忘记密码?</el-link>
               </div>
             </el-form-item>
 
@@ -105,6 +105,23 @@
               />
             </el-form-item>
 
+            <el-form-item label="真实姓名" prop="real_name">
+              <el-input
+                v-model="registerForm.real_name"
+                placeholder="请输入真实姓名"
+                :prefix-icon="User"
+                clearable
+              />
+            </el-form-item>
+
+            <el-form-item label="学号" prop="student_id">
+              <el-input
+                v-model="registerForm.student_id"
+                placeholder="请输入学号(学生/教师必填)"
+                clearable
+              />
+            </el-form-item>
+
             <el-form-item label="身份" prop="role">
               <el-select
                 v-model="registerForm.role"
@@ -120,9 +137,9 @@
             <el-form-item>
               <el-checkbox v-model="agreeTerms">
                 我已阅读并同意
-                <el-link type="primary" :underline="false">《用户协议》</el-link>
+                <el-link type="primary" underline="never">《用户协议》</el-link>
                 和
-                <el-link type="primary" :underline="false">《隐私政策》</el-link>
+                <el-link type="primary" underline="never">《隐私政策》</el-link>
               </el-checkbox>
             </el-form-item>
 
@@ -175,6 +192,8 @@ const registerForm = reactive({
   username: '',
   password: '',
   confirmPassword: '',
+  real_name: '',
+  student_id: '',
   email: '',
   role: ''
 })
@@ -253,17 +272,28 @@ async function handleLogin() {
     userStore.setToken(response.access_token)
 
     // 获取用户信息
-    const userInfo = await authApi.getCurrentUser()
-    userStore.setUserInfo({
-      id: userInfo.id,
-      username: userInfo.username,
-      role: userInfo.role,
-      avatar: userInfo.avatar || '',
-      email: userInfo.email || ''
-    })
+    try {
+      const userInfo = await authApi.getCurrentUser()
+      userStore.setUserInfo({
+        id: userInfo.id,
+        username: userInfo.username,
+        role: userInfo.role,
+        avatar: userInfo.avatar || '',
+        email: userInfo.email || ''
+      })
+    } catch (userError: any) {
+      console.error('获取用户信息失败:', userError)
+      // 获取用户信息失败，但登录成功，使用基本信息继续
+      userStore.setUserInfo({
+        username: loginData.username,
+        role: 'student' // 默认角色
+      })
+    }
 
     ElMessage.success('登录成功!')
-    router.push('/home')
+    console.log('准备跳转到首页...')
+    await router.push('/home')
+    console.log('跳转完成')
   } catch (error: any) {
     console.error('登录失败:', error)
     const errorMessage = error.response?.data?.detail || '登录失败，请检查用户名和密码'
@@ -290,6 +320,8 @@ async function handleRegister() {
     const registerData: RegisterRequest = {
       username: registerForm.username,
       password: registerForm.password,
+      real_name: registerForm.real_name || undefined,
+      student_id: registerForm.student_id || undefined,
       email: registerForm.email,
       role: registerForm.role
     }

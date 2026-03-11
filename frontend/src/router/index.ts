@@ -79,14 +79,28 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.meta.requiresAuth !== false
   const requiresAdmin = to.meta.requiresAdmin === true
 
+  console.log('路由守卫:', { path: to.path, hasToken: !!token, requiresAuth })
+
+  // 如果URL参数中有force=true，强制清除token并跳转到登录页
+  if (to.query.force === 'true') {
+    console.log('强制清除token，跳转到登录页')
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+    // 重定向到登录页，不带force参数
+    next({ path: '/login', query: {} })
+    return
+  }
+
   // 登录页处理：如果有token，跳转到首页
   if (to.path === '/login' && token) {
+    console.log('已登录，跳转到首页')
     next('/home')
     return
   }
 
   // 需要认证的页面：没有token则跳转到登录
   if (requiresAuth && !token) {
+    console.log('需要认证但无token，跳转到登录页')
     next('/login')
     return
   }
@@ -100,6 +114,7 @@ router.beforeEach((to, from, next) => {
     }
   }
 
+  console.log('允许访问:', to.path)
   next()
 })
 

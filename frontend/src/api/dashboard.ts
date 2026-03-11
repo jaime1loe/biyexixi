@@ -43,7 +43,7 @@ export const statisticsApi = {
   },
 
   getPopularQuestions: (limit: number = 8) => {
-    return request.get<any, any[]>('/statistics/popular-questions', {
+    return request.get<any, any[]>('/statistics/top-questions', {
       params: { limit }
     })
   }
