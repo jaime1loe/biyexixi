@@ -2,9 +2,52 @@
   <el-container class="layout-container">
     <el-header>
       <div class="header-content">
-        <h1 class="system-title">高校智能问答系统</h1>
-        <div class="user-info">
-          <el-dropdown @command="handleCommand">
+        <h1 class="system-title">高效智能问答系统</h1>
+        <div class="header-actions">
+          <el-dropdown @command="handleMenuCommand">
+            <el-button type="primary" class="home-menu-btn">
+              <el-icon><Menu /></el-icon>
+              首页功能
+              <el-icon><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="/home">
+                  <el-icon><HomeFilled /></el-icon>
+                  首页
+                </el-dropdown-item>
+                <el-dropdown-item command="/chat">
+                  <el-icon><ChatDotRound /></el-icon>
+                  智能问答
+                </el-dropdown-item>
+                <el-dropdown-item command="/history">
+                  <el-icon><Clock /></el-icon>
+                  问答历史
+                </el-dropdown-item>
+                <el-dropdown-item command="/knowledge">
+                  <el-icon><Document /></el-icon>
+                  知识库管理
+                </el-dropdown-item>
+                <el-dropdown-item command="/favorites">
+                  <el-icon><Star /></el-icon>
+                  我的收藏
+                </el-dropdown-item>
+                <el-dropdown-item command="/campus">
+                  <el-icon><School /></el-icon>
+                  校园服务
+                </el-dropdown-item>
+                <el-dropdown-item command="/dashboard">
+                  <el-icon><DataAnalysis /></el-icon>
+                  数据统计
+                </el-dropdown-item>
+                <el-dropdown-item v-if="isAdmin" command="/admin">
+                  <el-icon><Management /></el-icon>
+                  管理后台
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-dropdown @command="handleUserCommand">
             <div class="user-dropdown">
               <el-avatar :size="36" :src="userInfo?.avatar">
                 <el-icon><User /></el-icon>
@@ -42,15 +85,35 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { User, ArrowDown, UserFilled, Setting, SwitchButton } from '@element-plus/icons-vue'
+import {
+  User,
+  ArrowDown,
+  UserFilled,
+  Setting,
+  SwitchButton,
+  Menu,
+  HomeFilled,
+  ChatDotRound,
+  Clock,
+  Document,
+  Star,
+  School,
+  DataAnalysis,
+  Management
+} from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const userInfo = computed(() => userStore.userInfo)
+const isAdmin = computed(() => userInfo.value?.role === 'admin')
 
-async function handleCommand(command: string) {
+function handleMenuCommand(path: string) {
+  router.push(path)
+}
+
+async function handleUserCommand(command: string) {
   switch (command) {
     case 'profile':
       router.push('/profile')
@@ -105,9 +168,28 @@ async function handleCommand(command: string) {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.user-info {
+.header-actions {
   display: flex;
   align-items: center;
+  gap: 16px;
+}
+
+.home-menu-btn {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 16px;
+  padding: 12px 24px;
+  font-weight: 500;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.home-menu-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .user-dropdown {
