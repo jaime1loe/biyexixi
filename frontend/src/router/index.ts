@@ -12,6 +12,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '登录/注册', requiresAuth: false }
   },
   {
+    path: '/home',
+    name: 'Home',
+    component: () => import('@/views/Home.vue'),
+    meta: { title: '首页', requiresAuth: true }
+  },
+  {
     path: '/chat',
     name: 'Chat',
     component: () => import('@/views/Chat.vue'),
@@ -42,10 +48,22 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '个人中心', requiresAuth: true }
   },
   {
-    path: '/settings',
-    name: 'Settings',
-    component: () => import('@/views/Settings.vue'),
-    meta: { title: '系统设置', requiresAuth: true }
+    path: '/favorites',
+    name: 'Favorites',
+    component: () => import('@/views/Favorites.vue'),
+    meta: { title: '我的收藏', requiresAuth: true }
+  },
+  {
+    path: '/campus',
+    name: 'Campus',
+    component: () => import('@/views/Campus.vue'),
+    meta: { title: '校园服务', requiresAuth: true }
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('@/views/Admin.vue'),
+    meta: { title: '管理后台', requiresAuth: true, requiresAdmin: true }
   }
 ]
 
@@ -59,20 +77,30 @@ router.beforeEach((to, from, next) => {
 
   const token = localStorage.getItem('token')
   const requiresAuth = to.meta.requiresAuth !== false
+  const requiresAdmin = to.meta.requiresAdmin === true
 
-  // 如果访问登录页且有token，清除token强制重新登录
+  // 登录页处理：如果有token，跳转到首页
   if (to.path === '/login' && token) {
-    localStorage.removeItem('token')
-    localStorage.removeItem('userInfo')
+    next('/home')
+    return
   }
 
+  // 需要认证的页面：没有token则跳转到登录
   if (requiresAuth && !token) {
     next('/login')
-  } else if (to.path === '/login' && token) {
-    next('/chat')
-  } else {
-    next()
+    return
   }
+
+  // 需要管理员权限的页面
+  if (requiresAdmin && token) {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    if (userInfo.role !== 'admin') {
+      next('/home')
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

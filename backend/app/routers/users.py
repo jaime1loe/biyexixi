@@ -121,7 +121,59 @@ async def reset_user_password(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="用户不存在"
         )
-    
+
     user.password_hash = get_password_hash(new_password)
     db.commit()
     return {"message": "密码重置成功"}
+
+
+@router.get("/me/profile", response_model=UserResponse, summary="获取当前用户信息")
+async def get_my_profile(
+    current_user: User = Depends(get_current_user)
+):
+    """获取当前用户个人信息"""
+    return current_user
+
+
+@router.put("/me/profile", response_model=UserResponse, summary="更新当前用户信息")
+async def update_my_profile(
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """更新当前用户个人信息"""
+    # 更新个人信息
+    if user_update.real_name is not None:
+        current_user.real_name = user_update.real_name
+    if user_update.student_id is not None and current_user.student_id != user_update.student_id:
+        # 检查学号是否已被使用
+        existing = db.query(User).filter(
+            User.student_id == user_update.student_id,
+            User.id != current_user.id
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="学号已被使用"
+            )
+        current_user.student_id = user_update.student_id
+    if user_update.email is not None:
+        current_user.email = user_update.email
+    if user_update.phone is not None:
+        current_user.phone = user_update.phone
+    if user_update.avatar is not None:
+        current_user.avatar = user_update.avatar
+    if user_update.department is not None:
+        current_user.department = user_update.department
+    if user_update.major is not None:
+        current_user.major = user_update.major
+    if user_update.class_name is not None:
+        current_user.class_name = user_update.class_name
+
+    # 角色只有管理员可以修改
+    if user_update.role is not None and current_user.role == "admin":
+        current_user.role = user_update.role
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user

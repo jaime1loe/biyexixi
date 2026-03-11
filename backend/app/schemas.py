@@ -9,7 +9,12 @@ class UserBase(BaseModel):
     real_name: Optional[str] = None
     student_id: Optional[str] = None
     email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    avatar: Optional[str] = None
     role: str = "student"
+    department: Optional[str] = None
+    major: Optional[str] = None
+    class_name: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -22,7 +27,12 @@ class UserUpdate(BaseModel):
     real_name: Optional[str] = None
     student_id: Optional[str] = None
     email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    avatar: Optional[str] = None
     role: Optional[str] = None
+    department: Optional[str] = None
+    major: Optional[str] = None
+    class_name: Optional[str] = None
 
 
 class UserResponse(UserBase):
@@ -104,12 +114,23 @@ class KnowledgeCreate(KnowledgeBase):
 class KnowledgeResponse(KnowledgeBase):
     """知识响应模型"""
     id: int
+    file_name: Optional[str] = None
     file_path: Optional[str] = None
+    file_type: Optional[str] = None
+    file_size: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class KnowledgeUpdate(BaseModel):
+    """知识更新模型"""
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[str] = None
 
 
 class StatisticsResponse(BaseModel):
@@ -125,3 +146,44 @@ class Result(BaseModel):
     code: int = 200
     message: str = "success"
     data: Optional[Any] = None
+
+
+class FavoriteCreate(BaseModel):
+    """收藏创建模型"""
+    question_id: int
+
+
+class FavoriteResponse(BaseModel):
+    """收藏响应模型"""
+    id: int
+    user_id: int
+    question_id: int
+    question: Optional[QuestionResponse] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationBase(BaseModel):
+    """通知基础模型"""
+    title: str = Field(..., min_length=1, max_length=200)
+    content: Optional[str] = None
+    category: Optional[str] = None
+    is_important: int = 0
+
+
+class NotificationCreate(NotificationBase):
+    """通知创建模型"""
+    pass
+
+
+class NotificationResponse(NotificationBase):
+    """通知响应模型"""
+    id: int
+    file_path: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     DB_PORT: int = 3306
     DB_NAME: str = "qa_system"
     DB_USER: str = "root"
-    DB_PASSWORD: str = ""
+    DB_PASSWORD: str = "12345678"
 
     @property
     def DATABASE_URL(self) -> str:

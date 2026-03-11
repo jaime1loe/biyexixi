@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.config import settings
 from backend.app.database import engine, Base
-from backend.app.routers import auth, questions, knowledge, feedback, statistics, users
+from backend.app.routers import auth, questions, knowledge, feedback, statistics, users, favorites, notifications, campus
 from backend.app.exceptions import (
     sqlalchemy_exception_handler,
     http_exception_handler,
@@ -60,6 +60,9 @@ app.include_router(questions.router, prefix="/api/questions", tags=["问答"])
 app.include_router(knowledge.router, prefix="/api/knowledge", tags=["知识库"])
 app.include_router(feedback.router, prefix="/api/feedback", tags=["反馈"])
 app.include_router(statistics.router, prefix="/api/statistics", tags=["统计"])
+app.include_router(favorites.router, prefix="/api/favorites", tags=["收藏"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["通知"])
+app.include_router(campus.router, prefix="/api/campus", tags=["校园服务"])
 
 
 @app.get("/", summary="健康检查")

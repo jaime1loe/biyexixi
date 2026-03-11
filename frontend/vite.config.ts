@@ -17,5 +17,8 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    charset: 'utf-8'
   }
 })

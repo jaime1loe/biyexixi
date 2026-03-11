@@ -15,7 +15,13 @@ class User(Base):
     real_name = Column(String(50), comment="真实姓名")
     student_id = Column(String(20), unique=True, comment="学号")
     email = Column(String(100), comment="邮箱")
+    phone = Column(String(20), comment="电话")
+    avatar = Column(String(255), comment="头像路径")
     role = Column(String(20), default="student", comment="角色: student/teacher/admin")
+    department = Column(String(50), comment="院系")
+    major = Column(String(50), comment="专业")
+    class_name = Column(String(50), comment="班级")
+    is_active = Column(Integer, default=1, comment="是否激活: 1=激活, 0=禁用")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
 
@@ -33,7 +39,10 @@ class Question(Base):
     question = Column(Text, nullable=False, comment="问题内容")
     answer = Column(Text, comment="答案内容")
     category = Column(String(50), comment="问题分类")
+    views = Column(Integer, default=0, comment="浏览次数")
+    is_public = Column(Integer, default=1, comment="是否公开: 1=公开, 0=私密")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
 
     # 关系
     user = relationship("User", back_populates="questions")
@@ -65,7 +74,10 @@ class Knowledge(Base):
     content = Column(Text, nullable=False, comment="知识内容")
     category = Column(String(50), comment="分类")
     tags = Column(String(200), comment="标签，逗号分隔")
-    file_path = Column(String(255), comment="关联文件路径")
+    file_name = Column(String(255), comment="文件名")
+    file_path = Column(String(255), comment="文件存储路径")
+    file_type = Column(String(50), comment="文件类型")
+    file_size = Column(Integer, comment="文件大小(字节)")
     embedding = Column(Text, comment="向量数据(JSON)")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
@@ -81,3 +93,27 @@ class Statistics(Base):
     user_count = Column(Integer, default=0, comment="活跃用户数")
     avg_rating = Column(Float, default=0.0, comment="平均评分")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
+
+
+class Favorite(Base):
+    """收藏表"""
+    __tablename__ = "favorites"
+
+    id = Column(Integer, primary_key=True, index=True, comment="收藏ID")
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, comment="用户ID")
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False, comment="问题ID")
+    created_at = Column(DateTime, default=datetime.now, comment="收藏时间")
+
+
+class Notification(Base):
+    """通知表"""
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True, comment="通知ID")
+    title = Column(String(200), nullable=False, comment="通知标题")
+    content = Column(Text, comment="通知内容")
+    category = Column(String(50), comment="通知分类")
+    is_important = Column(Integer, default=0, comment="是否重要: 1=重要, 0=普通")
+    file_path = Column(String(255), comment="附件路径")
+    created_at = Column(DateTime, default=datetime.now, comment="发布时间")
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
