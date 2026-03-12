@@ -4,11 +4,14 @@ export interface Notification {
   id: number
   title: string
   content?: string
+  detail_content?: string
   category?: string
   is_important: number
   file_path?: string
   created_at: string
   updated_at: string
+  publisher?: string
+  views?: number
 }
 
 export interface NotificationCreate {

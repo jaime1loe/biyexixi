@@ -84,7 +84,23 @@ async def get_my_favorites(
     favorites = db.query(Favorite).filter(
         Favorite.user_id == current_user.id
     ).order_by(desc(Favorite.created_at)).offset(skip).limit(limit).all()
-    return favorites
+    
+    # 构建响应数据，包含问题和回答内容
+    favorite_responses = []
+    for favorite in favorites:
+        question = db.query(Question).filter(Question.id == favorite.question_id).first()
+        if question:
+            favorite_data = {
+                "id": favorite.id,
+                "user_id": favorite.user_id,
+                "question_id": favorite.question_id,
+                "created_at": favorite.created_at,
+                "question": question.question,
+                "answer": question.answer
+            }
+            favorite_responses.append(favorite_data)
+    
+    return favorite_responses
 
 
 @router.get("/check/{question_id}", summary="检查是否已收藏")

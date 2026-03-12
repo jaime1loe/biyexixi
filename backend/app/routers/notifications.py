@@ -88,10 +88,9 @@ async def get_notifications(
 @router.get("/{notification_id}", response_model=NotificationResponse, summary="获取通知详情")
 async def get_notification(
     notification_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-    """获取通知详情"""
+    """获取通知详情（公开访问）"""
     notification = db.query(Notification).filter(Notification.id == notification_id).first()
     if not notification:
         raise HTTPException(

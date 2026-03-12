@@ -64,6 +64,18 @@ const routes: RouteRecordRaw[] = [
     name: 'Admin',
     component: () => import('@/views/Admin.vue'),
     meta: { title: '管理后台', requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/notification/:id',
+    name: 'NotificationDetail',
+    component: () => import('@/views/NotificationDetail.vue'),
+    meta: { title: '通知详情', requiresAuth: true }
+  },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: () => import('@/views/Notifications.vue'),
+    meta: { title: '通知公告', requiresAuth: true }
   }
 ]
 

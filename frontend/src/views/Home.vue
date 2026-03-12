@@ -82,6 +82,13 @@
           <h3>校园服务</h3>
           <p>空教室、成绩查询等</p>
         </div>
+        <div class="quick-access-item" @click="goToPath('/notifications')">
+          <div class="quick-icon" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+            <el-icon><Bell /></el-icon>
+          </div>
+          <h3>通知公告</h3>
+          <p>查看学校最新通知</p>
+        </div>
       </div>
     </div>
 
@@ -254,6 +261,7 @@
           v-for="notification in notifications"
           :key="notification.id"
           class="notification-item"
+          @click="viewNotificationDetail(notification.id)"
         >
           <div class="notification-icon" :class="{ important: notification.is_important }">
             <el-icon><Document /></el-icon>
@@ -343,6 +351,10 @@ function handleQuickAsk() {
     return
   }
   router.push({ path: '/chat', query: { q: quickQuestion.value.trim() } })
+}
+
+function viewNotificationDetail(id: number) {
+  router.push(`/notification/${id}`)
 }
 
 function formatTime(timestamp: string): string {

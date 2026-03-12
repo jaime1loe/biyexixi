@@ -163,6 +163,8 @@ class FavoriteResponse(BaseModel):
     user_id: int
     question_id: int
     created_at: datetime
+    question: Optional[str] = None
+    answer: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -172,8 +174,10 @@ class NotificationBase(BaseModel):
     """通知基础模型"""
     title: str = Field(..., min_length=1, max_length=200)
     content: Optional[str] = None
+    detail_content: Optional[str] = None
     category: Optional[str] = None
     is_important: int = 0
+    publisher: Optional[str] = None
 
 
 class NotificationCreate(NotificationBase):
@@ -185,6 +189,7 @@ class NotificationResponse(NotificationBase):
     """通知响应模型"""
     id: int
     file_path: Optional[str] = None
+    views: Optional[int] = 0
     created_at: datetime
     updated_at: datetime
 

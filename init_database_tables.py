@@ -20,7 +20,7 @@ def init_tables():
     try:
         # 创建所有表
         Base.metadata.create_all(bind=engine)
-        print("\n✓ 数据库表创建成功！")
+        print("\n[成功] 数据库表创建成功！")
 
         # 列出所有表
         from sqlalchemy import inspect
@@ -36,7 +36,7 @@ def init_tables():
         print("=" * 60)
 
     except Exception as e:
-        print(f"\n✗ 初始化失败: {e}")
+        print(f"\n[失败] 初始化失败: {e}")
         raise
 
 

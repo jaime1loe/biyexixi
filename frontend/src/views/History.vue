@@ -37,6 +37,15 @@
             </div>
             <div class="item-actions">
               <el-tag v-if="item.category" size="small">{{ item.category }}</el-tag>
+              <el-button 
+                link 
+                :type="item.is_favorited ? 'warning' : 'primary'" 
+                :icon="StarFilled" 
+                @click="handleFavorite(item)"
+                :loading="item.favoriteLoading"
+              >
+                {{ item.is_favorited ? '已收藏' : '收藏' }}
+              </el-button>
               <el-button link type="primary" :icon="View" @click="handleView(item)">查看</el-button>
             </div>
           </div>
@@ -68,8 +77,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Clock, Download, Search, ChatDotRound, View, Delete } from '@element-plus/icons-vue'
+import { Clock, Download, Search, ChatDotRound, View, Delete, StarFilled } from '@element-plus/icons-vue'
 import { chatApi, Question } from '@/api/chat'
+import { favoritesApi } from '@/api/favorites'
 
 interface HistoryItem {
   id: number
@@ -77,6 +87,8 @@ interface HistoryItem {
   answer?: string
   created_at: string
   category?: string
+  is_favorited?: boolean
+  favoriteLoading?: boolean
 }
 
 const searchKeyword = ref('')
@@ -117,7 +129,28 @@ async function loadHistory() {
       skip: (currentPage.value - 1) * pageSize.value,
       limit: pageSize.value
     })
-    historyList.value = data
+    
+    // 检查每个问题是否已被收藏
+    const historyWithFavorites = await Promise.all(
+      data.map(async (item) => {
+        try {
+          const response = await favoritesApi.check(item.id)
+          return {
+            ...item,
+            is_favorited: response.data.is_favorited,
+            favoriteLoading: false
+          }
+        } catch (error) {
+          return {
+            ...item,
+            is_favorited: false,
+            favoriteLoading: false
+          }
+        }
+      })
+    )
+    
+    historyList.value = historyWithFavorites
     total.value = data.length
   } catch (error: any) {
     ElMessage.error(error.response?.data?.detail || '加载历史记录失败')
@@ -138,6 +171,44 @@ function handleView(item: HistoryItem) {
   ElMessageBox.alert(item.answer || '暂无回答', item.question, {
     confirmButtonText: '关闭'
   })
+}
+
+async function handleFavorite(item: HistoryItem) {
+  // 检查用户是否登录
+  const token = localStorage.getItem('token')
+  if (!token) {
+    ElMessage.warning('请先登录后再使用收藏功能')
+    return
+  }
+
+  if (!item.answer) {
+    ElMessage.warning('只有已回答的问题才能收藏')
+    return
+  }
+
+  item.favoriteLoading = true
+  try {
+    if (item.is_favorited) {
+      // 取消收藏
+      const favorites = await favoritesApi.getAll()
+      const favorite = favorites.find(f => f.question_id === item.id)
+      if (favorite) {
+        await favoritesApi.remove(favorite.id)
+        item.is_favorited = false
+        ElMessage.success('已取消收藏')
+      }
+    } else {
+      // 添加收藏
+      await favoritesApi.add({ question_id: item.id })
+      item.is_favorited = true
+      ElMessage.success('收藏成功')
+    }
+  } catch (error: any) {
+    console.error('收藏操作失败:', error)
+    ElMessage.error(error.response?.data?.detail || '操作失败')
+  } finally {
+    item.favoriteLoading = false
+  }
 }
 
 async function handleDelete(item: HistoryItem) {
