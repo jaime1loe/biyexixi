@@ -287,7 +287,7 @@ const passwordRules = {
 // 加载用户信息
 const loadUserInfo = () => {
   // TODO: 从后端API获取用户信息
-  const userData = localStorage.getItem('userInfo')
+  const userData = sessionStorage.getItem('userInfo')
   if (userData) {
     const user = JSON.parse(userData)
     userInfo.username = user.username
@@ -321,12 +321,12 @@ const handleSave = async () => {
         await new Promise(resolve => setTimeout(resolve, 1000))
 
         // 更新本地存储
-        const userData = JSON.parse(localStorage.getItem('userInfo') || '{}')
+        const userData = JSON.parse(sessionStorage.getItem('userInfo') || '{}')
         Object.assign(userData, userInfo)
-        localStorage.setItem('userInfo', JSON.stringify(userData))
+        sessionStorage.setItem('userInfo', JSON.stringify(userData))
 
         // 同时更新 userStore
-        const storedUser = JSON.parse(localStorage.getItem('userInfo') || '{}')
+        const storedUser = JSON.parse(sessionStorage.getItem('userInfo') || '{}')
         userStore.setUserInfo(storedUser)
 
         ElMessage.success('保存成功')
@@ -364,8 +364,8 @@ const handleChangePassword = async () => {
 
         // 3秒后跳转到登录页
         setTimeout(() => {
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
+          sessionStorage.removeItem('token')
+          sessionStorage.removeItem('userInfo')
           window.location.href = '/login'
         }, 3000)
       } catch (error) {
@@ -419,9 +419,9 @@ const confirmAvatar = () => {
   avatarDialogVisible.value = false
 
   // 保存到本地存储
-  const userData = JSON.parse(localStorage.getItem('userInfo') || '{}')
+  const userData = JSON.parse(sessionStorage.getItem('userInfo') || '{}')
   userData.avatar = userInfo.avatar
-  localStorage.setItem('userInfo', JSON.stringify(userData))
+  sessionStorage.setItem('userInfo', JSON.stringify(userData))
 
   // 同时更新 userStore
   userStore.setUserInfo(userData)

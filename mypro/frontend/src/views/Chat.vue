@@ -229,7 +229,7 @@ async function handleRating(index: number, rating: number) {
 
 async function handleFavorite(index: number) {
   // 检查用户是否登录
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
   if (!token) {
     ElMessage.warning('请先登录后再使用收藏功能')
     return

@@ -21,24 +21,27 @@ export const useUserStore = defineStore('user', () => {
 
   function setUserInfo(info: UserInfo) {
     userInfo.value = info
-    localStorage.setItem('userInfo', JSON.stringify(info))
+    // 使用 sessionStorage 而不是 localStorage,关闭浏览器后自动清除
+    sessionStorage.setItem('userInfo', JSON.stringify(info))
   }
 
   function setToken(newToken: string) {
     token.value = newToken
-    localStorage.setItem('token', newToken)
+    // 使用 sessionStorage 而不是 localStorage,关闭浏览器后自动清除
+    sessionStorage.setItem('token', newToken)
   }
 
   function logout() {
     userInfo.value = null
     token.value = ''
-    localStorage.removeItem('userInfo')
-    localStorage.removeItem('token')
+    sessionStorage.removeItem('userInfo')
+    sessionStorage.removeItem('token')
   }
 
   function initFromStorage() {
-    const storedUser = localStorage.getItem('userInfo')
-    const storedToken = localStorage.getItem('token')
+    // 只从 sessionStorage 读取,不再从 localStorage 读取
+    const storedUser = sessionStorage.getItem('userInfo')
+    const storedToken = sessionStorage.getItem('token')
     if (storedUser) userInfo.value = JSON.parse(storedUser)
     if (storedToken) token.value = storedToken
   }

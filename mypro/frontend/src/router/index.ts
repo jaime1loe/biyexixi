@@ -93,39 +93,40 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title || '高校知识库智能答疑系统'}`
 
-  const token = localStorage.getItem('token')
+  // 使用 sessionStorage 而不是 localStorage,关闭浏览器后自动清除
+  const token = sessionStorage.getItem('token')
   const requiresAuth = to.meta.requiresAuth !== false
   const requiresAdmin = to.meta.requiresAdmin === true
 
   console.log('路由守卫:', { path: to.path, hasToken: !!token, requiresAuth })
 
-  // 如果URL参数中有force=true，强制清除token并跳转到登录页
+  // 如果URL参数中有force=true,强制清除token并跳转到登录页
   if (to.query.force === 'true') {
-    console.log('强制清除token，跳转到登录页')
-    localStorage.removeItem('token')
-    localStorage.removeItem('userInfo')
-    // 重定向到登录页，不带force参数
+    console.log('强制清除token,跳转到登录页')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('userInfo')
+    // 重定向到登录页,不带force参数
     next({ path: '/login', query: {} })
     return
   }
 
-  // 登录页处理：如果有token，跳转到首页
+  // 登录页处理:如果有token,跳转到首页
   if (to.path === '/login' && token) {
-    console.log('已登录，跳转到首页')
+    console.log('已登录,跳转到首页')
     next('/home')
     return
   }
 
-  // 需要认证的页面：没有token则跳转到登录
+  // 需要认证的页面:没有token则跳转到登录
   if (requiresAuth && !token) {
-    console.log('需要认证但无token，跳转到登录页')
+    console.log('需要认证但无token,跳转到登录页')
     next('/login')
     return
   }
 
   // 需要管理员权限的页面
   if (requiresAdmin && token) {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}')
     if (userInfo.role !== 'admin') {
       next('/home')
       return

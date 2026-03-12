@@ -175,7 +175,7 @@ function handleView(item: HistoryItem) {
 
 async function handleFavorite(item: HistoryItem) {
   // 检查用户是否登录
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
   if (!token) {
     ElMessage.warning('请先登录后再使用收藏功能')
     return

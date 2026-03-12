@@ -21,9 +21,9 @@ const userStore = useUserStore()
 const currentLayout = computed(() => route.path === '/login' ? 'div' : Layout)
 
 onMounted(() => {
-  // 从 localStorage 初始化用户状态
-  const storedUser = localStorage.getItem('userInfo')
-  const storedToken = localStorage.getItem('token')
+  // 从 sessionStorage 初始化用户状态 (关闭浏览器后自动清除)
+  const storedUser = sessionStorage.getItem('userInfo')
+  const storedToken = sessionStorage.getItem('token')
   if (storedUser) {
     userStore.setUserInfo(JSON.parse(storedUser))
   }
