@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKe
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from app.database import Base
+from backend.app.database import Base
 
 
 class User(Base):
@@ -74,6 +74,13 @@ class Knowledge(Base):
     content = Column(Text, nullable=False, comment="知识内容")
     category = Column(String(50), comment="分类")
     tags = Column(String(200), comment="标签，逗号分隔")
+    status = Column(String(20), default="pending", comment="状态: pending=待处理, processing=处理中, completed=已完成, failed=失败")
+    # 审核相关字段
+    uploader_id = Column(Integer, ForeignKey("users.id"), comment="上传者用户ID")
+    reviewer_id = Column(Integer, ForeignKey("users.id"), comment="审核人用户ID")
+    review_status = Column(String(20), default="pending", comment="审核状态: pending=待审核, approved=已通过, rejected=已拒绝")
+    rejection_reason = Column(Text, comment="拒绝原因")
+    # 文件相关字段
     file_name = Column(String(255), comment="文件名")
     file_path = Column(String(255), comment="文件存储路径")
     file_type = Column(String(50), comment="文件类型")
@@ -111,9 +118,12 @@ class Notification(Base):
 
     id = Column(Integer, primary_key=True, index=True, comment="通知ID")
     title = Column(String(200), nullable=False, comment="通知标题")
-    content = Column(Text, comment="通知内容")
+    content = Column(Text, comment="通知内容（摘要）")
+    detail_content = Column(Text, comment="详细内容")
     category = Column(String(50), comment="通知分类")
     is_important = Column(Integer, default=0, comment="是否重要: 1=重要, 0=普通")
     file_path = Column(String(255), comment="附件路径")
+    publisher = Column(String(100), comment="发布单位")
+    views = Column(Integer, default=0, comment="浏览次数")
     created_at = Column(DateTime, default=datetime.now, comment="发布时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")

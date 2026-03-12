@@ -23,6 +23,14 @@
                 <div v-if="message.role === 'assistant'" class="message-actions">
                   <el-button
                     link
+                    :type="message.isFavorited ? 'warning' : 'primary'"
+                    :icon="message.isFavorited ? BookmarkFilled : Bookmark"
+                    :loading="message.favoriteLoading"
+                    @click="handleFavorite(index)"
+                    :title="message.isFavorited ? '已收藏' : '收藏问题'"
+                  />
+                  <el-button
+                    link
                     type="primary"
                     :icon="message.rating >= 1 ? StarFilled : Star"
                     @click="handleRating(index, 1)"
@@ -117,9 +125,10 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { User, Service, Position, ChatDotRound, ChatLineRound, StarFilled, Star } from '@element-plus/icons-vue'
+import { User, Service, Position, ChatDotRound, ChatLineRound, StarFilled, Star, StarFilled as BookmarkFilled, Star as Bookmark } from '@element-plus/icons-vue'
 import { chatApi, Question } from '@/api/chat'
 import { useUserStore } from '@/store/user'
+import { favoritesApi } from '@/api/favorites'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -127,6 +136,8 @@ interface ChatMessage {
   timestamp: number
   rating?: number
   questionId?: number
+  isFavorited?: boolean
+  favoriteLoading?: boolean
 }
 
 const userStore = useUserStore()
@@ -181,7 +192,9 @@ async function handleSend() {
       role: 'assistant',
       content: response.answer || '抱歉，暂时无法回答您的问题。',
       timestamp: Date.now(),
-      questionId: response.id
+      questionId: response.id,
+      isFavorited: false,
+      favoriteLoading: false
     }
     messages.value.push(assistantMessage)
   } catch (error: any) {
@@ -210,6 +223,42 @@ async function handleRating(index: number, rating: number) {
       ElMessage.success('感谢您的评价！')
     } catch (error) {
       ElMessage.error('评价提交失败')
+    }
+  }
+}
+
+async function handleFavorite(index: number) {
+  // 检查用户是否登录
+  const token = localStorage.getItem('token')
+  if (!token) {
+    ElMessage.warning('请先登录后再使用收藏功能')
+    return
+  }
+
+  const message = messages.value[index]
+  if (message.role === 'assistant' && message.questionId) {
+    message.favoriteLoading = true
+    try {
+      if (message.isFavorited) {
+        // 取消收藏
+        const favorites = await favoritesApi.getAll()
+        const favorite = favorites.find(f => f.question_id === message.questionId)
+        if (favorite) {
+          await favoritesApi.remove(favorite.id)
+          message.isFavorited = false
+          ElMessage.success('已取消收藏')
+        }
+      } else {
+        // 添加收藏
+        await favoritesApi.add({ question_id: message.questionId })
+        message.isFavorited = true
+        ElMessage.success('收藏成功！您可以在"我的收藏"页面查看')
+      }
+    } catch (error: any) {
+      console.error('收藏操作失败:', error)
+      ElMessage.error(error.response?.data?.detail || '操作失败')
+    } finally {
+      message.favoriteLoading = false
     }
   }
 }

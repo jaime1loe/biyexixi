@@ -118,6 +118,13 @@ class KnowledgeCreate(KnowledgeBase):
 class KnowledgeResponse(KnowledgeBase):
     """知识响应模型"""
     id: int
+    status: Optional[str] = None
+    # 审核相关字段
+    uploader_id: Optional[int] = None
+    reviewer_id: Optional[int] = None
+    review_status: Optional[str] = None
+    rejection_reason: Optional[str] = None
+    # 文件相关字段
     file_name: Optional[str] = None
     file_path: Optional[str] = None
     file_type: Optional[str] = None
@@ -163,6 +170,8 @@ class FavoriteResponse(BaseModel):
     user_id: int
     question_id: int
     created_at: datetime
+    question: Optional[str] = None
+    answer: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -172,8 +181,10 @@ class NotificationBase(BaseModel):
     """通知基础模型"""
     title: str = Field(..., min_length=1, max_length=200)
     content: Optional[str] = None
+    detail_content: Optional[str] = None
     category: Optional[str] = None
     is_important: int = 0
+    publisher: Optional[str] = None
 
 
 class NotificationCreate(NotificationBase):
@@ -185,8 +196,15 @@ class NotificationResponse(NotificationBase):
     """通知响应模型"""
     id: int
     file_path: Optional[str] = None
+    views: Optional[int] = 0
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class ReviewAction(BaseModel):
+    """审核操作模型"""
+    action: str = Field(..., description="审核动作: approve/reject")
+    reason: Optional[str] = Field(None, description="拒绝原因（仅在拒绝时需要）")
