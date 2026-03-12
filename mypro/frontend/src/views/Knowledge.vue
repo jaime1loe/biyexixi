@@ -92,7 +92,33 @@
         </el-tab-pane>
 
         <el-tab-pane label="文档列表" name="list">
-          <el-table v-loading="loading" :data="documentList" style="width: 100%" stripe>
+          <div class="filter-bar">
+            <el-select
+              v-model="selectedCategoryFilter"
+              placeholder="筛选文档种类"
+              clearable
+              style="width: 200px; margin-right: 12px;"
+              @change="handleFilterChange"
+            >
+              <el-option label="全部" value="" />
+              <el-option
+                v-for="cat in categories"
+                :key="cat.name"
+                :label="cat.name"
+                :value="cat.name"
+              />
+            </el-select>
+            <el-date-picker
+              v-model="uploadTimeRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              style="width: 300px;"
+              @change="handleFilterChange"
+            />
+          </div>
+          <el-table v-loading="loading" :data="documentList" style="width: 100%; margin-top: 16px;" stripe>
             <el-table-column prop="title" label="文档名称" min-width="200">
               <template #default="{ row }">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -320,6 +346,8 @@ const rejectDialogVisible = ref(false)
 const uploading = ref(false)
 const uploadFile = ref<File | null>(null)
 const selectedCategory = ref('')
+const selectedCategoryFilter = ref('')
+const uploadTimeRange = ref<[Date, Date] | null>(null)
 const showInput = ref(false)
 const newCategory = ref('')
 const loading = ref(false)
@@ -430,10 +458,24 @@ async function initAdminStats() {
 async function loadCategories() {
   try {
     const data = await knowledgeApi.getCategories()
-    // 获取每个分类的知识数量
+    // 获取所有文档以统计每个分类的数量
+    const allDocs = await knowledgeApi.getList({
+      skip: 0,
+      limit: 10000
+    })
+
+    // 统计每个分类的文档数量
+    const categoryCountMap: Record<string, number> = {}
+    allDocs.forEach(doc => {
+      if (doc.category) {
+        categoryCountMap[doc.category] = (categoryCountMap[doc.category] || 0) + 1
+      }
+    })
+
+    // 更新分类列表及其数量
     categories.value = data.categories.map(cat => ({
       name: cat,
-      count: 0 // 这里可以单独调用API获取数量，暂时设为0
+      count: categoryCountMap[cat] || 0
     }))
   } catch (error: any) {
     ElMessage.error('加载分类失败')
@@ -443,14 +485,42 @@ async function loadCategories() {
 async function loadDocuments() {
   loading.value = true
   try {
-    const data = await knowledgeApi.getList({
-      skip: (currentPage.value - 1) * pageSize.value,
-      limit: pageSize.value
+    // 获取所有文档
+    const allDocs = await knowledgeApi.getList({
+      skip: 0,
+      limit: 10000
     })
-    documentList.value = data.map((item, index) => ({
+
+    let filteredDocs = allDocs
+
+    // 按分类筛选
+    if (selectedCategoryFilter.value) {
+      filteredDocs = filteredDocs.filter(doc => doc.category === selectedCategoryFilter.value)
+    }
+
+    // 按上传时间筛选
+    if (uploadTimeRange.value && uploadTimeRange.value.length === 2) {
+      const [startDate, endDate] = uploadTimeRange.value
+      const startTime = new Date(startDate).setHours(0, 0, 0, 0)
+      const endTime = new Date(endDate).setHours(23, 59, 59, 999)
+      filteredDocs = filteredDocs.filter(doc => {
+        const docTime = new Date(doc.created_at).getTime()
+        return docTime >= startTime && docTime <= endTime
+      })
+    }
+
+    // 更新总数
+    total.value = filteredDocs.length
+
+    // 分页处理
+    const startIndex = (currentPage.value - 1) * pageSize.value
+    const endIndex = startIndex + pageSize.value
+    const paginatedDocs = filteredDocs.slice(startIndex, endIndex)
+
+    documentList.value = paginatedDocs.map((item, index) => ({
       ...item,
       uploadTime: item.created_at,
-      status: item.status || 'completed' // 使用后端返回的status，如果没有则默认为completed
+      status: item.status || 'completed'
     }))
 
     // 加载所有文档以获取准确的统计数据
@@ -495,7 +565,7 @@ async function handleConfirmUpload() {
     uploadDialogVisible.value = false
     // 重新加载数据
     loadDocuments()
-    loadCategories()
+    loadCategories() // 更新分类数量
     loadStats() // 重新加载统计数据
     if (!isAdmin.value) {
       loadMyDocuments() // 学生/老师也更新我的文档列表
@@ -594,6 +664,7 @@ async function handleDelete(row: KnowledgeDoc) {
       loadDocuments()
     }
     loadStats() // 更新统计数据
+    loadCategories() // 更新分类数量
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error('删除失败')
@@ -606,12 +677,12 @@ async function handleAddCategory() {
     try {
       await knowledgeApi.addCategory(newCategory.value.trim())
       ElMessage.success('分类添加成功')
-      await loadCategories()
+      newCategory.value = ''
+      showInput.value = false
+      await loadCategories() // 更新分类列表和数量
     } catch (error: any) {
       ElMessage.error(error.response?.data?.detail || '添加分类失败')
     }
-    newCategory.value = ''
-    showInput.value = false
   }
 }
 
@@ -624,7 +695,8 @@ async function handleDeleteCategory(name: string) {
     })
     await knowledgeApi.deleteCategory(name)
     ElMessage.success('分类删除成功')
-    await loadCategories()
+    await loadCategories() // 更新分类列表和数量
+    await loadDocuments() // 更新文档列表
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error(error.response?.data?.detail || '删除分类失败')
@@ -673,6 +745,7 @@ async function handleApprove(row: Knowledge) {
     await loadPendingList()
     await loadDocuments() // 更新文档列表
     await loadStats() // 更新统计数据
+    await loadCategories() // 更新分类数量
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error(error.response?.data?.detail || '审核失败')
@@ -701,6 +774,7 @@ async function handleConfirmReject() {
     await loadPendingList()
     await loadDocuments() // 更新文档列表
     await loadStats() // 更新统计数据
+    await loadCategories() // 更新分类数量
   } catch (error: any) {
     ElMessage.error(error.response?.data?.detail || '拒绝失败')
   }
@@ -737,6 +811,12 @@ function formatFileSize(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+}
+
+// 筛选条件变化处理
+function handleFilterChange() {
+  currentPage.value = 1
+  loadDocuments()
 }
 
 onMounted(() => {
@@ -927,5 +1007,12 @@ onMounted(() => {
   margin-left: auto;
   font-size: 12px;
   color: #909399;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 </style>
