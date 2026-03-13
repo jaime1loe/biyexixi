@@ -3,13 +3,21 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/login'
+    name: 'Welcome',
+    component: () => import('@/views/Welcome.vue'),
+    meta: { title: '欢迎', requiresAuth: false }
   },
   {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
     meta: { title: '登录/注册', requiresAuth: false }
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: () => import('@/views/AdminLogin.vue'),
+    meta: { title: '管理员登录', requiresAuth: false }
   },
   {
     path: '/home',
@@ -62,7 +70,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     name: 'Admin',
-    component: () => import('@/views/Admin.vue'),
+    component: () => import('@/views/AdminDashboard.vue'),
     meta: { title: '管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
@@ -114,10 +122,23 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // 登录页处理:如果有token,跳转到首页
-  if (to.path === '/login' && token) {
-    console.log('已登录,跳转到首页')
-    next('/home')
+  // 已登录用户访问登录页面或欢迎页面的处理
+  if ((to.path === '/login' || to.path === '/admin/login' || to.path === '/') && token) {
+    console.log('已登录,根据角色跳转')
+    
+    // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
+    let userInfoStr = sessionStorage.getItem('userInfo')
+    if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
+    const userInfo = JSON.parse(userInfoStr || '{}')
+    
+    // 检查是否是管理员
+    if (userInfo.role === 'admin') {
+      // 管理员用户，跳转到管理后台
+      next('/admin')
+    } else {
+      // 普通用户，跳转到首页
+      next('/home')
+    }
     return
   }
 
@@ -136,7 +157,23 @@ router.beforeEach((to, from, next) => {
     const userInfo = JSON.parse(userInfoStr || '{}')
     
     if (userInfo.role !== 'admin') {
+      ElMessage.error('您不是管理员，无法访问管理后台')
       next('/home')
+      return
+    }
+  }
+
+  // 管理员不能访问普通用户页面（除了管理后台）
+  if (token) {
+    // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
+    let userInfoStr = sessionStorage.getItem('userInfo')
+    if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
+    const userInfo = JSON.parse(userInfoStr || '{}')
+    
+    // 如果是管理员，且不是访问管理后台相关页面，则重定向到管理后台
+    if (userInfo.role === 'admin' && !to.path.startsWith('/admin') && to.path !== '/admin/login') {
+      console.log('管理员访问非管理页面，重定向到管理后台')
+      next('/admin')
       return
     }
   }

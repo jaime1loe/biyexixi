@@ -1,8 +1,8 @@
 <template>
   <div class="knowledge-container">
     <div class="knowledge-header">
-      <h3><el-icon><Document /></el-icon>知识库管理</h3>
-      <el-button type="primary" :icon="Upload" @click="handleUpload">上传文档</el-button>
+      <h3><el-icon><Document /></el-icon>知识库</h3>
+      <el-button v-if="isTeacher" type="primary" :icon="Upload" @click="handleUpload">上传文档</el-button>
     </div>
 
     <div class="knowledge-stats">
@@ -26,10 +26,10 @@
               <div class="stat-icon" style="background: #67c23a;">
                 <el-icon><SuccessFilled /></el-icon>
               </div>
-              <div class="stat-content">
-                <div class="stat-value">{{ stats.completed }}</div>
-                <div class="stat-label">{{ isAdmin ? '已处理' : '已通过' }}</div>
-              </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ stats.completed }}</div>
+              <div class="stat-label">已通过</div>
+            </div>
             </div>
           </el-card>
         </el-col>
@@ -39,10 +39,10 @@
               <div class="stat-icon" style="background: #e6a23c;">
                 <el-icon><Loading /></el-icon>
               </div>
-              <div class="stat-content">
-                <div class="stat-value">{{ stats.processing }}</div>
-                <div class="stat-label">{{ isAdmin ? '待处理' : '待审核' }}</div>
-              </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ stats.processing }}</div>
+              <div class="stat-label">待审核</div>
+            </div>
             </div>
           </el-card>
         </el-col>
@@ -52,10 +52,10 @@
               <div class="stat-icon" style="background: #f56c6c;">
                 <el-icon><CircleClose /></el-icon>
               </div>
-              <div class="stat-content">
-                <div class="stat-value">{{ stats.failed }}</div>
-                <div class="stat-label">{{ isAdmin ? '已拒绝' : '失败' }}</div>
-              </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ stats.failed }}</div>
+              <div class="stat-label">已拒绝</div>
+            </div>
             </div>
           </el-card>
         </el-col>
@@ -162,8 +162,8 @@
           </div>
         </el-tab-pane>
 
-        <!-- 学生/教师专属：我的文档 -->
-        <el-tab-pane v-if="!isAdmin" label="我的文档" name="my-documents">
+        <!-- 老师专属：我的文档 -->
+        <el-tab-pane v-if="isTeacher" label="我的文档" name="my-documents">
           <el-table v-loading="loading" :data="myDocumentsList" style="width: 100%" stripe>
             <el-table-column prop="title" label="文档名称" min-width="200">
               <template #default="{ row }">
@@ -380,8 +380,11 @@ const documentList = ref<KnowledgeDoc[]>([])
 const pendingList = ref<Knowledge[]>([])
 const myDocumentsList = ref<Knowledge[]>([])
 
-// 判断是否为管理员
-const isAdmin = computed(() => userStore.userInfo?.role === 'admin')
+// 判断用户角色
+const userRole = computed(() => userStore.userInfo?.role)
+const isAdmin = computed(() => userRole.value === 'admin')
+const isTeacher = computed(() => userRole.value === 'teacher')
+const isStudent = computed(() => userRole.value === 'student')
 
 // 统计数据
 const stats = ref({
@@ -820,37 +823,23 @@ function handleFilterChange() {
 }
 
 onMounted(() => {
-  // 管理员：初始化统计（记录登录时的初始值）
+  // 检查是否为管理员，如果是管理员则重定向到管理后台
   if (isAdmin.value) {
-    initAdminStats().then(() => {
-      loadStats()
-    })
+    ElMessage.warning('管理员请通过管理后台访问知识库功能')
+    router.push('/admin')
+    return
   }
 
   loadCategories()
   loadDocuments()
-
-  // 根据角色加载不同的列表
-  if (isAdmin.value) {
-    loadPendingList()
-  } else {
-    loadMyDocuments()
-  }
+  loadMyDocuments()
 
   // 监听标签页切换
   watch(activeTab, (newTab) => {
-    if (isAdmin.value) {
-      if (newTab === 'pending') {
-        loadPendingList()
-      } else if (newTab === 'list') {
-        loadDocuments()
-      }
-    } else {
-      if (newTab === 'my-documents') {
-        loadMyDocuments()
-      } else if (newTab === 'list') {
-        loadDocuments()
-      }
+    if (newTab === 'my-documents') {
+      loadMyDocuments()
+    } else if (newTab === 'list') {
+      loadDocuments()
     }
   })
 })

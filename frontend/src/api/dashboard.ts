@@ -1,9 +1,11 @@
 import request from './index'
 
 export interface StatisticsOverview {
-  total_questions: number
-  total_users: number
-  total_knowledge: number
+  question_count: number
+  answer_count: number
+  ask_count: number
+  user_count: number
+  knowledge_count: number
   avg_rating: number
   today_questions: number
   today_users: number

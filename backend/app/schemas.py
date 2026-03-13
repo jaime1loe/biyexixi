@@ -74,6 +74,7 @@ class QuestionResponse(QuestionBase):
     answer: Optional[str] = None
     category: Optional[str] = None
     views: Optional[int] = 0
+    ask_count: Optional[int] = 1
     is_public: Optional[int] = 1
     created_at: datetime
     updated_at: Optional[datetime] = None

@@ -18,9 +18,19 @@ interface UserInfo {
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref<UserInfo | null>(null)
   const token = ref<string>('')
+  const isAdminLogin = ref<boolean>(false)
 
   function setUserInfo(info: UserInfo) {
     userInfo.value = info
+    // 检查是否是管理员登录
+    if (info.role === 'admin') {
+      isAdminLogin.value = true
+      sessionStorage.setItem('isAdminLogin', 'true')
+    } else {
+      isAdminLogin.value = false
+      sessionStorage.removeItem('isAdminLogin')
+    }
+    
     // 使用 localStorage 确保登录状态持久化
     localStorage.setItem('userInfo', JSON.stringify(info))
     sessionStorage.setItem('userInfo', JSON.stringify(info)) // 同时存储到sessionStorage
@@ -36,10 +46,21 @@ export const useUserStore = defineStore('user', () => {
   function logout() {
     userInfo.value = null
     token.value = ''
+    isAdminLogin.value = false
     localStorage.removeItem('userInfo')
     localStorage.removeItem('token')
     sessionStorage.removeItem('userInfo')
     sessionStorage.removeItem('token')
+    sessionStorage.removeItem('isAdminLogin')
+  }
+
+  function clearUserInfo() {
+    userInfo.value = null
+    token.value = ''
+    isAdminLogin.value = false
+    sessionStorage.removeItem('userInfo')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('isAdminLogin')
   }
 
   function initFromStorage() {
@@ -50,11 +71,25 @@ export const useUserStore = defineStore('user', () => {
     if (!storedUser) storedUser = localStorage.getItem('userInfo')
     if (!storedToken) storedToken = localStorage.getItem('token')
     
-    if (storedUser) userInfo.value = JSON.parse(storedUser)
+    if (storedUser) {
+      userInfo.value = JSON.parse(storedUser)
+      // 检查是否是管理员
+      if (userInfo.value?.role === 'admin') {
+        isAdminLogin.value = sessionStorage.getItem('isAdminLogin') === 'true'
+      }
+    }
     if (storedToken) token.value = storedToken
   }
 
   initFromStorage()
 
-  return { userInfo, token, setUserInfo, setToken, logout }
+  return { 
+    userInfo, 
+    token, 
+    isAdminLogin,
+    setUserInfo, 
+    setToken, 
+    logout, 
+    clearUserInfo 
+  }
 })

@@ -18,7 +18,9 @@ const route = useRoute()
 const userStore = useUserStore()
 
 // 登录页面不使用布局组件
-const currentLayout = computed(() => route.path === '/login' ? 'div' : Layout)
+const currentLayout = computed(() => 
+  route.path === '/login' || route.path === '/admin/login' ? 'div' : Layout
+)
 
 onMounted(() => {
   // 从 sessionStorage 初始化用户状态 (关闭浏览器后自动清除)

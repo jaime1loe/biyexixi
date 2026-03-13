@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKe
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from backend.app.database import Base
+from app.database import Base
 
 
 class User(Base):
@@ -40,6 +40,7 @@ class Question(Base):
     answer = Column(Text, comment="答案内容")
     category = Column(String(50), comment="问题分类")
     views = Column(Integer, default=0, comment="浏览次数")
+    ask_count = Column(Integer, default=1, comment="提问次数")
     is_public = Column(Integer, default=1, comment="是否公开: 1=公开, 0=私密")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")

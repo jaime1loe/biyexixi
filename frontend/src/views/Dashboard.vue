@@ -225,9 +225,11 @@ const stats = ref<DashboardStats>({
 })
 
 const overview = ref<StatisticsOverview>({
-  total_questions: 0,
-  total_users: 0,
-  total_knowledge: 0,
+  question_count: 0,
+  answer_count: 0,
+  ask_count: 0,
+  user_count: 0,
+  knowledge_count: 0,
   avg_rating: 0,
   today_questions: 0,
   today_users: 0,
@@ -249,8 +251,8 @@ async function loadOverview() {
   try {
     const data = await statisticsApi.getOverview()
     overview.value = data
-    stats.value.totalQuestions = data.total_questions
-    stats.value.totalAnswers = data.total_questions
+    stats.value.totalQuestions = data.question_count
+    stats.value.totalAnswers = data.answer_count
     stats.value.avgRating = data.avg_rating
     stats.value.todayQuestions = data.today_questions
   } catch (error: any) {
@@ -294,7 +296,7 @@ async function loadTopQuestions() {
     const data = await statisticsApi.getTopQuestions(5)
     stats.value.popularQuestions = data.map(item => ({
       question: item.question,
-      count: 0 // 后端需要提供统计字段
+      count: item.ask_count || 1
     }))
   } catch (error) {
     console.error('加载热门问题失败:', error)

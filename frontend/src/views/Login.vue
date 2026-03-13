@@ -38,6 +38,18 @@
               />
             </el-form-item>
 
+            <el-form-item label="登录身份" prop="loginRole">
+              <el-select
+                v-model="loginForm.loginRole"
+                placeholder="请选择登录身份"
+                style="width: 100%"
+              >
+                <el-option label="学生" value="student" />
+                <el-option label="教师" value="teacher" />
+                <el-option label="管理员" value="admin" />
+              </el-select>
+            </el-form-item>
+
             <el-form-item>
               <div class="form-options">
                 <el-checkbox v-model="rememberMe">记住密码</el-checkbox>
@@ -185,7 +197,8 @@ const registerFormRef = ref<FormInstance>()
 
 const loginForm = reactive({
   username: '',
-  password: ''
+  password: '',
+  loginRole: ''
 })
 
 const registerForm = reactive({
@@ -241,7 +254,8 @@ const validateEmail = (rule: any, value: any, callback: any) => {
 
 const loginRules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  loginRole: [{ required: true, message: '请选择登录身份', trigger: 'change' }]
 }
 
 const registerRules: FormRules = {
@@ -281,19 +295,45 @@ async function handleLogin() {
         avatar: userInfo.avatar || '',
         email: userInfo.email || ''
       })
+
+      // 验证用户选择的角色与实际角色是否匹配
+      const selectedRole = loginForm.loginRole
+      const actualRole = userInfo.role
+
+      if (selectedRole !== actualRole) {
+        ElMessage.error(`您选择的身份(${getRoleLabel(selectedRole)})与您的实际身份(${getRoleLabel(actualRole)})不匹配，请重新选择`)
+        // 清除token
+        userStore.clearUserInfo()
+        sessionStorage.removeItem('token')
+        localStorage.removeItem('token')
+        return
+      }
+
+      // 根据角色跳转不同页面
+      ElMessage.success('登录成功!')
+      if (selectedRole === 'admin') {
+        // 管理员跳转到管理后台
+        await router.push('/admin')
+      } else {
+        // 学生和教师跳转到系统首页
+        await router.push('/home')
+      }
     } catch (userError: any) {
       console.error('获取用户信息失败:', userError)
       // 获取用户信息失败，但登录成功，使用基本信息继续
       userStore.setUserInfo({
         username: loginData.username,
-        role: 'student' // 默认角色
+        role: loginForm.loginRole
       })
+      
+      // 根据选择的角色跳转
+      ElMessage.success('登录成功!')
+      if (loginForm.loginRole === 'admin') {
+        await router.push('/admin')
+      } else {
+        await router.push('/home')
+      }
     }
-
-    ElMessage.success('登录成功!')
-    console.log('准备跳转到首页...')
-    await router.push('/home')
-    console.log('跳转完成')
   } catch (error: any) {
     console.error('登录失败:', error)
     const errorMessage = error.response?.data?.detail || '登录失败，请检查用户名和密码'
@@ -340,6 +380,16 @@ async function handleRegister() {
   } finally {
     loading.value = false
   }
+}
+
+// 获取角色标签
+function getRoleLabel(role: string): string {
+  const labelMap: Record<string, string> = {
+    admin: '管理员',
+    teacher: '教师',
+    student: '学生'
+  }
+  return labelMap[role] || role
 }
 </script>
 
