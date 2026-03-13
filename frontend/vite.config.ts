@@ -16,9 +16,15 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       }
+    },
+    fs: {
+      strict: false
     }
   },
   build: {
     charset: 'utf-8'
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'element-plus']
   }
 })

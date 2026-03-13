@@ -28,6 +28,16 @@
                   <el-icon><Document /></el-icon>
                   知识库管理
                 </el-dropdown-item>
+                <!-- 老师功能：学生评价查询 -->
+                <el-dropdown-item v-if="isTeacher" command="/evaluations">
+                  <el-icon><EditPen /></el-icon>
+                  学生评价查询
+                </el-dropdown-item>
+                <!-- 学生功能：我的成绩 -->
+                <el-dropdown-item v-if="isStudent" command="/evaluations">
+                  <el-icon><Trophy /></el-icon>
+                  我的成绩
+                </el-dropdown-item>
                 <el-dropdown-item command="/favorites">
                   <el-icon><Star /></el-icon>
                   我的收藏
@@ -99,7 +109,9 @@ import {
   Star,
   School,
   DataAnalysis,
-  Management
+  Management,
+  EditPen,
+  Trophy
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 
@@ -108,6 +120,8 @@ const userStore = useUserStore()
 
 const userInfo = computed(() => userStore.userInfo)
 const isAdmin = computed(() => userInfo.value?.role === 'admin')
+const isTeacher = computed(() => userInfo.value?.role === 'teacher')
+const isStudent = computed(() => userInfo.value?.role === 'student')
 
 function handleMenuCommand(path: string) {
   router.push(path)
@@ -130,7 +144,7 @@ async function handleUserCommand(command: string) {
         })
         userStore.logout()
         ElMessage.success('已退出登录')
-        router.push('/login')
+        router.push('/')
       } catch {
         // 用户取消
       }

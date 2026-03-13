@@ -89,6 +89,22 @@
           <h3>通知公告</h3>
           <p>查看学校最新通知</p>
         </div>
+        <!-- 老师：学生评价查询 -->
+        <div class="quick-access-item" v-if="isTeacher" @click="goToPath('/evaluations')">
+          <div class="quick-icon" style="background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);">
+            <el-icon><EditPen /></el-icon>
+          </div>
+          <h3>学生评价查询</h3>
+          <p>查询和评价学生成绩</p>
+        </div>
+        <!-- 学生：我的成绩 -->
+        <div class="quick-access-item" v-if="isStudent" @click="goToPath('/evaluations')">
+          <div class="quick-icon" style="background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);">
+            <el-icon><Trophy /></el-icon>
+          </div>
+          <h3>我的成绩</h3>
+          <p>查看个人学习成绩</p>
+        </div>
       </div>
     </div>
 
@@ -311,12 +327,21 @@ import {
   View,
   Position,
   List,
-  MagicStick
+  MagicStick,
+  EditPen,
+  Trophy
 } from '@element-plus/icons-vue'
 import { statisticsApi } from '@/api/dashboard'
 import { notificationApi } from '@/api/notifications'
+import { useUserStore } from '@/store/user'
+import { computed } from 'vue'
 
 const router = useRouter()
+const userStore = useUserStore()
+
+const userInfo = computed(() => userStore.userInfo)
+const isTeacher = computed(() => userInfo.value?.role === 'teacher')
+const isStudent = computed(() => userInfo.value?.role === 'student')
 
 const stats = ref({
   userCount: 0,

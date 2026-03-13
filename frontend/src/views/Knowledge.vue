@@ -91,7 +91,7 @@
           </el-table>
         </el-tab-pane>
 
-        <el-tab-pane label="文档列表" name="list">
+        <el-tab-pane label="知识库文档" name="list">
           <div class="filter-bar">
             <el-select
               v-model="selectedCategoryFilter"
@@ -128,17 +128,18 @@
               </template>
             </el-table-column>
             <el-table-column prop="category" label="分类" width="120" />
+            <el-table-column prop="uploader_name" label="上传者" width="120" />
             <el-table-column prop="uploadTime" label="上传时间" width="180">
               <template #default="{ row }">
                 {{ formatTime(row.uploadTime) }}
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="180" fixed="right">
+            <el-table-column label="操作" width="120" fixed="right">
               <template #default="{ row }">
                 <el-button link type="primary" :icon="View" size="small" @click="handleView(row)">查看</el-button>
-                <!-- 管理员可以删除任意文档，教师/学生只能删除已被拒绝的文档 -->
+                <!-- 只有管理员可以删除文档，老师不能删除已审核通过的文档 -->
                 <el-button
-                  v-if="isAdmin || (row.review_status === 'rejected')"
+                  v-if="isAdmin"
                   link
                   type="danger"
                   :icon="Delete"
@@ -289,7 +290,7 @@
           <div class="file-info">
             <el-icon><Document /></el-icon>
             <span>{{ currentDoc.file_name }}</span>
-            <span class="file-size">{{ formatFileSize(currentDoc.file_size) }}</span>
+            <span class="file-size">{{ currentDoc.file_size ? formatFileSize(currentDoc.file_size) : '未知大小' }}</span>
             <el-button
               type="primary"
               size="small"
@@ -324,12 +325,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, Upload, View, Delete, SuccessFilled, Loading, CircleClose, Plus, UploadFilled } from '@element-plus/icons-vue'
 import { knowledgeApi, Knowledge } from '@/api/knowledge'
 import { useUserStore } from '@/store/user'
 
 const userStore = useUserStore()
+const router = useRouter()
 
 interface KnowledgeDoc extends Knowledge {
   uploadTime: string
@@ -361,12 +364,13 @@ const initialStats = ref({
   rejected: 0
 })
 
-const statusMap = {
-  pending: '待处理',
-  processing: '处理中',
-  completed: '已完成',
-  failed: '失败'
-}
+// 状态映射（暂时未使用）
+// const statusMap = {
+//   pending: '待处理',
+//   processing: '处理中',
+//   completed: '已完成',
+//   failed: '失败'
+// }
 
 const reviewStatusMap = {
   pending: '待审核',
@@ -384,7 +388,7 @@ const myDocumentsList = ref<Knowledge[]>([])
 const userRole = computed(() => userStore.userInfo?.role)
 const isAdmin = computed(() => userRole.value === 'admin')
 const isTeacher = computed(() => userRole.value === 'teacher')
-const isStudent = computed(() => userRole.value === 'student')
+// const isStudent = computed(() => userRole.value === 'student') // 暂时未使用
 
 // 统计数据
 const stats = ref({
@@ -494,7 +498,8 @@ async function loadDocuments() {
       limit: 10000
     })
 
-    let filteredDocs = allDocs
+    // 只显示审核通过的文档
+    let filteredDocs = allDocs.filter(doc => doc.review_status === 'approved')
 
     // 按分类筛选
     if (selectedCategoryFilter.value) {
@@ -520,7 +525,7 @@ async function loadDocuments() {
     const endIndex = startIndex + pageSize.value
     const paginatedDocs = filteredDocs.slice(startIndex, endIndex)
 
-    documentList.value = paginatedDocs.map((item, index) => ({
+    documentList.value = paginatedDocs.map(item => ({
       ...item,
       uploadTime: item.created_at,
       status: item.status || 'completed'
@@ -644,13 +649,10 @@ async function handleDownloadFile() {
 }
 
 async function handleDelete(row: KnowledgeDoc) {
-  // 管理员可以删除任意文档
-  // 教师/学生只能删除自己上传的已被拒绝的文档
-  if (userStore.userInfo?.role !== 'admin') {
-    if (row.review_status !== 'rejected') {
-      ElMessage.warning('只能删除已被拒绝的文档')
-      return
-    }
+  // 只有管理员可以删除文档
+  if (userRole.value !== 'admin') {
+    ElMessage.warning('您没有权限删除文档')
+    return
   }
   try {
     await ElMessageBox.confirm(`确定要删除文档"${row.title}"吗？`, '提示', {
@@ -833,6 +835,7 @@ onMounted(() => {
   loadCategories()
   loadDocuments()
   loadMyDocuments()
+  initAdminStats()
 
   // 监听标签页切换
   watch(activeTab, (newTab) => {

@@ -114,6 +114,9 @@ async function handleAdminLogin() {
 
     const response = await authApi.login(loginData)
 
+    // 先存储token
+    userStore.setToken(response.access_token)
+
     // 验证用户角色是否为管理员
     try {
       const userInfo = await authApi.getCurrentUser()
@@ -128,8 +131,7 @@ async function handleAdminLogin() {
         return
       }
 
-      // 存储管理员token和用户信息
-      userStore.setToken(response.access_token)
+      // 存储管理员用户信息
       userStore.setUserInfo({
         id: userInfo.id,
         username: userInfo.username,

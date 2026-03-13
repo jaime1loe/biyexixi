@@ -17,11 +17,6 @@
         active-text-color="#ff7875"
         @select="handleTabChange"
       >
-        <el-menu-item index="dashboard">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>数据概览</span>
-        </el-menu-item>
-        
         <el-sub-menu index="questions">
           <template #title>
             <el-icon><ChatDotRound /></el-icon>
@@ -63,120 +58,27 @@
 
     <!-- 主内容区 -->
     <div class="admin-main">
-      <!-- 顶部导航栏 -->
-      <div class="admin-header">
-        <div class="header-left">
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item>管理后台</el-breadcrumb-item>
-            <el-breadcrumb-item>{{ currentTabName }}</el-breadcrumb-item>
-          </el-breadcrumb>
-        </div>
-        
-        <div class="header-right">
-          <el-dropdown>
-            <span class="user-info">
-              <el-avatar :size="32" :src="userInfo.avatar" />
-              <span class="username">{{ userInfo.username }}</span>
-              <el-icon><ArrowDown /></el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="gotoProfile">
-                  <el-icon><User /></el-icon>个人资料
-                </el-dropdown-item>
-                <el-dropdown-item @click="gotoSystem">
-                  <el-icon><Monitor /></el-icon>系统状态
-                </el-dropdown-item>
-                <el-dropdown-item divided @click="logout">
-                  <el-icon><SwitchButton /></el-icon>退出登录
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </div>
-
       <!-- 内容区域 -->
       <div class="admin-content">
-        <!-- 数据概览 -->
-        <div v-if="activeTab === 'dashboard'" class="dashboard-content">
-          <div class="stats-cards">
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <el-icon size="48" color="#409eff"><User /></el-icon>
-                <div class="stat-info">
-                  <div class="stat-value">{{ dashboardData.usersTotal }}</div>
-                  <div class="stat-label">总用户数</div>
-                </div>
-              </div>
-            </el-card>
-            
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <el-icon size="48" color="#67c23a"><ChatDotRound /></el-icon>
-                <div class="stat-info">
-                  <div class="stat-value">{{ dashboardData.questionsTotal }}</div>
-                  <div class="stat-label">总问题数</div>
-                </div>
-              </div>
-            </el-card>
-            
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <el-icon size="48" color="#e6a23c"><Files /></el-icon>
-                <div class="stat-info">
-                  <div class="stat-value">{{ dashboardData.knowledgeTotal }}</div>
-                  <div class="stat-label">知识库文档</div>
-                </div>
-              </div>
-            </el-card>
-            
-            <el-card class="stat-card">
-              <div class="stat-content">
-                <el-icon size="48" color="#f56c6c"><Bell /></el-icon>
-                <div class="stat-info">
-                  <div class="stat-value">{{ dashboardData.notificationsTotal }}</div>
-                  <div class="stat-label">通知数量</div>
-                </div>
-              </div>
-            </el-card>
-          </div>
-          
-          <div class="charts-section">
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-card header="用户活跃度">
-                  <div class="chart-placeholder">
-                    <el-icon size="48" color="#909399"><PieChart /></el-icon>
-                    <p>用户活跃度图表</p>
-                  </div>
-                </el-card>
-              </el-col>
-              <el-col :span="12">
-                <el-card header="问答趋势">
-                  <div class="chart-placeholder">
-                    <el-icon size="48" color="#909399"><TrendCharts /></el-icon>
-                    <p>问答趋势图表</p>
-                  </div>
-                </el-card>
-              </el-col>
-            </el-row>
-          </div>
+        <div style="text-align: right; margin-bottom: 16px;">
+          <el-button type="danger" @click="logout">退出登录</el-button>
         </div>
-
-        <!-- 其他管理功能 -->
-        <div v-else-if="activeTab === 'questions-list'" class="tab-content">
+        <!-- 问题列表 -->
+        <div v-if="activeTab === 'questions-list'" class="tab-content">
           <QuestionsManagement />
         </div>
-        
+
+        <!-- 用户列表 -->
         <div v-else-if="activeTab === 'users-list'" class="tab-content">
           <UsersManagement />
         </div>
-        
+
+        <!-- 知识库列表 -->
         <div v-else-if="activeTab === 'knowledge-list'" class="tab-content">
           <KnowledgeManagement />
         </div>
-        
+
+        <!-- 其他功能 -->
         <div v-else class="tab-content">
           <el-alert
             :title="`${currentTabName} 功能开发中`"
@@ -194,10 +96,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { 
-  Setting, DataAnalysis, ChatDotRound, User, Files, Bell, 
-  ArrowDown, Monitor, SwitchButton, PieChart, TrendCharts
-} from '@element-plus/icons-vue'
+import { Setting, ChatDotRound, User, Files, Bell } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import QuestionsManagement from '@/components/admin/QuestionsManagement.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
@@ -206,13 +105,10 @@ import KnowledgeManagement from '@/components/admin/KnowledgeManagement.vue'
 const router = useRouter()
 const userStore = useUserStore()
 
-const activeTab = ref('dashboard')
-
-const userInfo = computed(() => userStore.userInfo || { username: '管理员' })
+const activeTab = ref('questions-list')
 
 const currentTabName = computed(() => {
   const tabMap: Record<string, string> = {
-    'dashboard': '数据概览',
     'questions-list': '问题列表',
     'categories': '分类管理',
     'users-list': '用户列表',
@@ -225,23 +121,8 @@ const currentTabName = computed(() => {
   return tabMap[activeTab.value] || '管理后台'
 })
 
-const dashboardData = ref({
-  usersTotal: 0,
-  questionsTotal: 0,
-  knowledgeTotal: 0,
-  notificationsTotal: 0
-})
-
 function handleTabChange(tab: string) {
   activeTab.value = tab
-}
-
-function gotoProfile() {
-  ElMessage.info('个人资料功能开发中')
-}
-
-function gotoSystem() {
-  ElMessage.info('系统状态功能开发中')
 }
 
 function logout() {
@@ -249,23 +130,7 @@ function logout() {
   // 清除管理员登录标记
   sessionStorage.removeItem('isAdminLogin')
   ElMessage.success('已退出管理员登录')
-  router.push('/admin/login')
-}
-
-// 模拟获取统计数据
-async function loadDashboardData() {
-  try {
-    // 这里应该调用实际的API获取数据
-    dashboardData.value = {
-      usersTotal: 128,
-      questionsTotal: 567,
-      knowledgeTotal: 42,
-      notificationsTotal: 15
-    }
-  } catch (error) {
-    console.error('加载统计数据失败:', error)
-    ElMessage.error('加载统计数据失败')
-  }
+  router.push('/')
 }
 
 onMounted(() => {
@@ -277,12 +142,9 @@ onMounted(() => {
     router.push('/home')
     return
   }
-  
+
   // 设置管理员登录标记
   sessionStorage.setItem('isAdminLogin', 'true')
-  
-  // 加载统计数据
-  loadDashboardData()
 })
 </script>
 

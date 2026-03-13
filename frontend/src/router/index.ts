@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -41,7 +42,13 @@ const routes: RouteRecordRaw[] = [
     path: '/knowledge',
     name: 'Knowledge',
     component: () => import('@/views/Knowledge.vue'),
-    meta: { title: '知识库管理', requiresAuth: true }
+    meta: { title: '知识库', requiresAuth: true }
+  },
+  {
+    path: '/evaluations',
+    name: 'Evaluations',
+    component: () => import('@/views/Evaluations.vue'),
+    meta: { title: '学生评价查询', requiresAuth: true }
   },
   {
     path: '/dashboard',
@@ -98,7 +105,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   document.title = `${to.meta.title || '高校知识库智能答疑系统'}`
 
   // 优先从sessionStorage读取token，如果没有则从localStorage读取
@@ -122,15 +129,16 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // 已登录用户访问登录页面或欢迎页面的处理
-  if ((to.path === '/login' || to.path === '/admin/login' || to.path === '/') && token) {
-    console.log('已登录,根据角色跳转')
-    
+  // 已登录用户访问登录页面的处理（不包括根路径）
+  // 注意：/admin/login 页面不进行自动跳转，允许已登录用户访问以重新进行管理员登录
+  if (to.path === '/login' && token) {
+    console.log('已登录用户访问登录页，跳转到对应首页')
+
     // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
     let userInfoStr = sessionStorage.getItem('userInfo')
     if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
     const userInfo = JSON.parse(userInfoStr || '{}')
-    
+
     // 检查是否是管理员
     if (userInfo.role === 'admin') {
       // 管理员用户，跳转到管理后台
@@ -163,15 +171,15 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // 管理员不能访问普通用户页面（除了管理后台）
+  // 管理员不能访问普通用户页面（除了管理后台和欢迎页面）
   if (token) {
     // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
     let userInfoStr = sessionStorage.getItem('userInfo')
     if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
     const userInfo = JSON.parse(userInfoStr || '{}')
     
-    // 如果是管理员，且不是访问管理后台相关页面，则重定向到管理后台
-    if (userInfo.role === 'admin' && !to.path.startsWith('/admin') && to.path !== '/admin/login') {
+    // 如果是管理员，且不是访问管理后台相关页面或欢迎页面，则重定向到管理后台
+    if (userInfo.role === 'admin' && !to.path.startsWith('/admin') && to.path !== '/admin/login' && to.path !== '/') {
       console.log('管理员访问非管理页面，重定向到管理后台')
       next('/admin')
       return

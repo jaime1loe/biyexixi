@@ -62,25 +62,34 @@ if errorlevel 1 (
 )
 echo.
 
+echo [4/4] 系统就绪...
+echo  系统已准备就绪，即将打开浏览器...
+echo.
+
 echo ========================================
 echo  系统启动完成！
 echo ========================================
 echo.
 echo  访问地址：
-echo    前端: http://localhost:5173
-echo    后端: http://localhost:8000
+echo    欢迎页面: http://localhost:5173/
+echo    学生/教师登录: http://localhost:5173/login
+echo    管理员登录: http://localhost:5173/admin/login
+echo    后端API: http://localhost:8000
 echo    API文档: http://localhost:8000/docs
 echo.
 echo  默认登录账号：
 echo    管理员: admin / admin123
 echo    学生:   student / student123
 echo.
-echo  提示：
+echo  系统说明：
+echo    - 双击启动后，会自动打开欢迎页面
+echo    - 在欢迎页面选择：学生/教师 或 管理员
+echo    - 根据选择进入不同的登录页面
 echo    - 后端和前端服务窗口请勿关闭
 echo    - 关闭窗口即关闭服务
 echo.
 timeout /t 2 /nobreak >nul
-start http://localhost:5173/login?force=true
+start http://localhost:5173/
 
 echo.
 echo 按任意键关闭此窗口（不影响服务运行）...

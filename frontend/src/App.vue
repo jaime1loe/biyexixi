@@ -17,9 +17,9 @@ import Layout from '@/components/Layout.vue'
 const route = useRoute()
 const userStore = useUserStore()
 
-// 登录页面不使用布局组件
-const currentLayout = computed(() => 
-  route.path === '/login' || route.path === '/admin/login' ? 'div' : Layout
+// 登录页面和欢迎页面不使用布局组件
+const currentLayout = computed(() =>
+  route.path === '/' || route.path === '/login' || route.path === '/admin/login' ? 'div' : Layout
 )
 
 onMounted(() => {
