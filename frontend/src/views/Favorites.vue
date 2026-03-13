@@ -12,7 +12,8 @@
       </template>
 
       <div v-loading="loading">
-        <el-empty v-if="favorites.length === 0 && !loading" description="暂无收藏的问题" />
+        <el-empty v-if="favorites.length === 0 && !loading" 
+          :description="getUserRole() === 'student' ? '暂无收藏的问题，快去问答界面收藏吧！' : '暂无收藏的问题'" />
 
         <el-table v-else :data="favorites" stripe style="width: 100%">
           <el-table-column prop="question" label="问题" min-width="300">
@@ -90,7 +91,17 @@ const loadFavorites = async () => {
     favorites.value = response
   } catch (error: any) {
     console.error('加载收藏失败:', error)
-    ElMessage.error(error.response?.data?.detail || '加载收藏失败')
+    if (error.response?.status === 401) {
+      // 401错误：可能是token过期或无效
+      ElMessage.warning('登录已过期，请重新登录')
+      sessionStorage.removeItem('token')
+      sessionStorage.removeItem('userInfo')
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      favorites.value = [] // 清空收藏列表
+    } else {
+      ElMessage.error(error.response?.data?.detail || '加载收藏失败')
+    }
   } finally {
     loading.value = false
   }
@@ -124,6 +135,13 @@ const formatDate = (dateString: string) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleString('zh-CN')
+}
+
+const getUserRole = () => {
+  let userInfoStr = sessionStorage.getItem('userInfo')
+  if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
+  const userInfo = JSON.parse(userInfoStr || '{}')
+  return userInfo.role || 'student'
 }
 
 onMounted(() => {

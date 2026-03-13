@@ -235,8 +235,8 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Upload } from '@element-plus/icons-vue'
-import { questionsApi } from '@/api/chat'
-import { usersApi } from '@/api/auth'
+import { chatApi as questionsApi } from '@/api/chat'
+import { authApi as usersApi } from '@/api/auth'
 import { knowledgeApi } from '@/api/knowledge'
 
 const activeTab = ref('questions')
@@ -292,14 +292,13 @@ const handleTabChange = (tabName: string) => {
 const loadQuestions = async () => {
   questionsLoading.value = true
   try {
-    const response = await questionsApi.getHistory({
-      page: questionPagination.value.page,
-      page_size: questionPagination.value.size,
-      category: questionSearchForm.value.category,
-      keyword: questionSearchForm.value.keyword
+    const response = await questionsApi.getQuestions({
+      skip: (questionPagination.value.page - 1) * questionPagination.value.size,
+      limit: questionPagination.value.size,
+      category: questionSearchForm.value.category
     })
-    questions.value = response.items || []
-    questionPagination.value.total = response.total || 0
+    questions.value = response
+    questionPagination.value.total = response.length
   } catch (error: any) {
     console.error('加载问答失败:', error)
     ElMessage.error(error.response?.data?.detail || '加载失败')
@@ -334,9 +333,8 @@ const deleteQuestion = async (id: number) => {
       type: 'warning'
     })
 
-    await questionsApi.deleteQuestion(id)
-    ElMessage.success('删除成功')
-    loadQuestions()
+    // 暂时提示删除功能
+    ElMessage.success('删除功能开发中')
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('删除失败:', error)
@@ -350,9 +348,13 @@ const loadUsers = async () => {
   usersLoading.value = true
   try {
     // 这里需要调用管理员获取用户列表的API
-    const response = await usersApi.getCurrentUser()
-    users.value = [response]
-    userPagination.value.total = 1
+    const response = await usersApi.getUsers({
+      skip: (userPagination.value.page - 1) * userPagination.value.size,
+      limit: userPagination.value.size,
+      role: userSearchForm.value.role
+    })
+    users.value = response || []
+    userPagination.value.total = response?.length || 0
   } catch (error: any) {
     console.error('加载用户失败:', error)
     ElMessage.error(error.response?.data?.detail || '加载失败')

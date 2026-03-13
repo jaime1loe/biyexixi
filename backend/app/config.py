@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # JWT 配置
     SECRET_KEY: str = "your-secret-key-change-this-in-production"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24小时
 
     # 文件上传配置
     UPLOAD_DIR: str = "uploads"

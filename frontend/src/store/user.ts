@@ -21,12 +21,16 @@ export const useUserStore = defineStore('user', () => {
 
   function setUserInfo(info: UserInfo) {
     userInfo.value = info
+    // 使用 localStorage 确保登录状态持久化
     localStorage.setItem('userInfo', JSON.stringify(info))
+    sessionStorage.setItem('userInfo', JSON.stringify(info)) // 同时存储到sessionStorage
   }
 
   function setToken(newToken: string) {
     token.value = newToken
+    // 使用 localStorage 确保登录状态持久化
     localStorage.setItem('token', newToken)
+    sessionStorage.setItem('token', newToken) // 同时存储到sessionStorage
   }
 
   function logout() {
@@ -34,11 +38,18 @@ export const useUserStore = defineStore('user', () => {
     token.value = ''
     localStorage.removeItem('userInfo')
     localStorage.removeItem('token')
+    sessionStorage.removeItem('userInfo')
+    sessionStorage.removeItem('token')
   }
 
   function initFromStorage() {
-    const storedUser = localStorage.getItem('userInfo')
-    const storedToken = localStorage.getItem('token')
+    // 优先从sessionStorage读取，如果没有则从localStorage读取
+    let storedUser = sessionStorage.getItem('userInfo')
+    let storedToken = sessionStorage.getItem('token')
+    
+    if (!storedUser) storedUser = localStorage.getItem('userInfo')
+    if (!storedToken) storedToken = localStorage.getItem('token')
+    
     if (storedUser) userInfo.value = JSON.parse(storedUser)
     if (storedToken) token.value = storedToken
   }

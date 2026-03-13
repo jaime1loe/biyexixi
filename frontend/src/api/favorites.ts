@@ -16,7 +16,7 @@ export interface FavoriteCreate {
 export const favoritesApi = {
   // 收藏问题
   add: (data: FavoriteCreate) => {
-    return request.post<any, FavoriteResponse>('/favorites', data)
+    return request.post<any, FavoriteResponse>('/favorites/', data)
   },
 
   // 取消收藏
@@ -26,7 +26,7 @@ export const favoritesApi = {
 
   // 获取我的收藏列表
   getList: (params?: { skip?: number; limit?: number }) => {
-    return request.get<any, FavoriteResponse[]>('/favorites', { params })
+    return request.get<any, FavoriteResponse[]>('/favorites/', { params })
   },
 
   // 检查是否已收藏
@@ -36,6 +36,6 @@ export const favoritesApi = {
 
   // 获取我的收藏列表（兼容旧版本）
   getAll: () => {
-    return request.get<any, FavoriteResponse[]>('/favorites')
+    return request.get<any, FavoriteResponse[]>('/favorites/')
   }
 }

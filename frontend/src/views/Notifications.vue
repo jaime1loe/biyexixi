@@ -60,8 +60,8 @@
         </span>
         <div class="sort-options">
           <el-radio-group v-model="sortOrder" @change="handleSort">
-            <el-radio-button label="desc">最新发布</el-radio-button>
-            <el-radio-button label="asc">最早发布</el-radio-button>
+            <el-radio-button value="desc">最新发布</el-radio-button>
+            <el-radio-button value="asc">最早发布</el-radio-button>
           </el-radio-group>
         </div>
       </div>

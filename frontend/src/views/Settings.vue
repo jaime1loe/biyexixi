@@ -13,15 +13,15 @@
           <div class="setting-section">
             <h3>主题模式</h3>
             <el-radio-group v-model="appearance.theme" @change="handleThemeChange">
-              <el-radio-button label="light">
+              <el-radio-button value="light">
                 <el-icon><Sunny /></el-icon>
                 浅色
               </el-radio-button>
-              <el-radio-button label="dark">
+              <el-radio-button value="dark">
                 <el-icon><Moon /></el-icon>
                 深色
               </el-radio-button>
-              <el-radio-button label="auto">
+              <el-radio-button value="auto">
                 <el-icon><Monitor /></el-icon>
                 跟随系统
               </el-radio-button>
@@ -70,17 +70,17 @@
           <div class="setting-section">
             <h3>界面语言</h3>
             <el-radio-group v-model="language.current" @change="handleLanguageChange">
-              <el-radio label="zh-CN">简体中文</el-radio>
-              <el-radio label="en-US">English</el-radio>
+              <el-radio value="zh-CN">简体中文</el-radio>
+              <el-radio value="en-US">English</el-radio>
             </el-radio-group>
           </div>
 
           <div class="setting-section">
             <h3>AI回复语言</h3>
             <el-radio-group v-model="language.aiLanguage" @change="handleAiLanguageChange">
-              <el-radio label="auto">自动检测</el-radio>
-              <el-radio label="zh-CN">简体中文</el-radio>
-              <el-radio label="en-US">English</el-radio>
+              <el-radio value="auto">自动检测</el-radio>
+              <el-radio value="zh-CN">简体中文</el-radio>
+              <el-radio value="en-US">English</el-radio>
             </el-radio-group>
           </div>
         </el-tab-pane>
@@ -110,10 +110,10 @@
           <div class="setting-section">
             <h3>消息通知类型</h3>
             <el-checkbox-group v-model="notification.types" @change="handleNotificationTypesChange">
-              <el-checkbox label="answer">收到新回复</el-checkbox>
-              <el-checkbox label="recommend">推荐内容</el-checkbox>
-              <el-checkbox label="system">系统公告</el-checkbox>
-              <el-checkbox label="update">功能更新</el-checkbox>
+              <el-checkbox value="answer">收到新回复</el-checkbox>
+              <el-checkbox value="recommend">推荐内容</el-checkbox>
+              <el-checkbox value="system">系统公告</el-checkbox>
+              <el-checkbox value="update">功能更新</el-checkbox>
             </el-checkbox-group>
           </div>
 
@@ -169,9 +169,9 @@
           <div class="setting-section">
             <h3>历史记录可见性</h3>
             <el-radio-group v-model="privacy.historyVisibility" @change="handleHistoryVisibilityChange">
-              <el-radio label="private">仅自己可见</el-radio>
-              <el-radio label="friends">好友可见</el-radio>
-              <el-radio label="public">公开</el-radio>
+              <el-radio value="private">仅自己可见</el-radio>
+              <el-radio value="friends">好友可见</el-radio>
+              <el-radio value="public">公开</el-radio>
             </el-radio-group>
           </div>
 
@@ -223,8 +223,8 @@
               <el-button
                 v-else
                 size="small"
-                icon="Plus"
-                @click="showReplyInput = true"
+                :icon="Plus"
+                @click="handleAddReplyClick"
               >
                 添加快捷回复
               </el-button>
@@ -328,7 +328,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Sunny,
@@ -340,6 +340,9 @@ import {
   Message,
   Plus
 } from '@element-plus/icons-vue'
+import { sound } from '@/utils/sound'
+import { notification as notificationManager } from '@/utils/notification'
+import { t, setLanguage, getCurrentLanguage, initLanguage } from '@/i18n'
 
 // 当前标签页
 const activeTab = ref('appearance')
@@ -410,11 +413,45 @@ const loadSettings = () => {
   const savedSettings = localStorage.getItem('settings')
   if (savedSettings) {
     const settings = JSON.parse(savedSettings)
-    Object.assign(appearance, settings.appearance || {})
-    Object.assign(language, settings.language || {})
-    Object.assign(notification, settings.notification || {})
-    Object.assign(privacy, settings.privacy || {})
-    Object.assign(advanced, settings.advanced || {})
+
+    // 加载外观设置
+    if (settings.appearance) {
+      Object.assign(appearance, settings.appearance)
+      // 应用保存的主题
+      applyTheme(appearance.theme)
+      // 应用保存的主题颜色
+      if (appearance.primaryColor) {
+        document.documentElement.style.setProperty('--el-color-primary', appearance.primaryColor)
+      }
+      // 应用保存的字体大小
+      if (appearance.fontSize) {
+        document.documentElement.style.setProperty('--el-font-size-base', `${appearance.fontSize}px`)
+      }
+      // 应用保存的缩放
+      if (appearance.scale) {
+        handleScaleChange(appearance.scale)
+      }
+    }
+
+    // 加载语言设置
+    if (settings.language) {
+      Object.assign(language, settings.language)
+    }
+
+    // 加载通知设置
+    if (settings.notification) {
+      Object.assign(notification, settings.notification)
+    }
+
+    // 加载隐私设置
+    if (settings.privacy) {
+      Object.assign(privacy, settings.privacy)
+    }
+
+    // 加载高级设置
+    if (settings.advanced) {
+      Object.assign(advanced, settings.advanced)
+    }
   }
 }
 
@@ -428,11 +465,48 @@ const saveSettings = () => {
     advanced: { ...advanced }
   }
   localStorage.setItem('settings', JSON.stringify(settings))
+
+  // 同步通知设置到通知管理器
+  notificationManager.setEnabled(notification.desktop)
+  notificationManager.setSoundEnabled(notification.sound)
+  notificationManager.setNotificationTypes(notification.types)
+  notificationManager.setDndMode(notification.dndMode, notification.dndStart, notification.dndEnd)
+}
+
+// 应用主题
+const applyTheme = (theme: string) => {
+  const html = document.documentElement
+
+  // 移除所有主题类
+  html.classList.remove('light', 'dark')
+
+  if (theme === 'auto') {
+    // 跟随系统主题
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    html.classList.add(prefersDark ? 'dark' : 'light')
+  } else {
+    html.classList.add(theme)
+  }
+
+  // 设置 CSS 变量
+  if (theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.style.setProperty('--el-bg-color', '#1a1a1a')
+    document.documentElement.style.setProperty('--el-text-color-primary', '#e5e5e5')
+    document.documentElement.style.setProperty('--el-text-color-regular', '#bfbfbf')
+    document.documentElement.style.setProperty('--el-border-color', '#434343')
+    document.documentElement.style.setProperty('--el-bg-color-page', '#121212')
+  } else {
+    document.documentElement.style.setProperty('--el-bg-color', '#ffffff')
+    document.documentElement.style.setProperty('--el-text-color-primary', '#303133')
+    document.documentElement.style.setProperty('--el-text-color-regular', '#606266')
+    document.documentElement.style.setProperty('--el-border-color', '#dcdfe6')
+    document.documentElement.style.setProperty('--el-bg-color-page', '#f5f7fa')
+  }
 }
 
 // 主题变更
 const handleThemeChange = (value: string) => {
-  // TODO: 实现主题切换逻辑
+  applyTheme(value)
   ElMessage.success(`已切换到${value === 'light' ? '浅色' : value === 'dark' ? '深色' : '跟随系统'}主题`)
 }
 
@@ -450,41 +524,79 @@ const handleFontSizeChange = (size: number) => {
 
 // 缩放变更
 const handleScaleChange = (scale: number) => {
+  // 使用 CSS 变量 + rem 单位的方式
+  // 这样所有使用 rem 单位的元素都会自动缩放
+  document.documentElement.style.setProperty('--scale-factor', scale.toString())
   document.documentElement.style.fontSize = `${scale * 16}px`
+
   ElMessage.success(`界面已缩放至 ${scale * 100}%`)
 }
 
 // 语言变更
 const handleLanguageChange = (lang: string) => {
-  ElMessage.success(lang === 'zh-CN' ? '已切换为简体中文' : '已切换为 English')
+  setLanguage(lang as 'zh-CN' | 'en-US')
+  const langName = lang === 'zh-CN' ? '简体中文' : 'English'
+  ElMessage.success(`已切换为${langName}`)
+
+  // 触发自定义事件，通知其他组件语言已更改
+  window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }))
 }
 
 // AI语言变更
 const handleAiLanguageChange = (lang: string) => {
   ElMessage.success('AI回复语言设置已更新')
+
+  // 保存到 localStorage（通过 saveSettings）
+  // 触发自定义事件
+  window.dispatchEvent(new CustomEvent('aiLanguageChanged', { detail: { lang } }))
 }
 
 // 通知设置变更
-const handleDesktopNotificationChange = (value: boolean) => {
-  if (value && !Notification.permission) {
-    Notification.requestPermission().then(permission => {
-      if (permission !== 'granted') {
+const handleDesktopNotificationChange = async (value: boolean) => {
+  if (value) {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission()
+      if (permission === 'granted') {
+        notificationManager.setEnabled(true)
+        ElMessage.success('桌面通知已开启')
+        // 发送测试通知
+        notificationManager.show({
+          title: '通知已开启',
+          body: '您已成功开启桌面通知功能',
+          type: 'system'
+        })
+      } else {
         notification.desktop = false
+        notificationManager.setEnabled(false)
         ElMessage.warning('浏览器未授权通知权限')
       }
-    })
+    } else {
+      notification.desktop = false
+      notificationManager.setEnabled(false)
+      ElMessage.error('您的浏览器不支持桌面通知')
+    }
+  } else {
+    notificationManager.setEnabled(false)
+    ElMessage.success('桌面通知已关闭')
   }
 }
 
 const handleSoundChange = (value: boolean) => {
+  if (value) {
+    sound.playNotificationSound()
+  }
+  sound.setEnabled(value)
+  notificationManager.setSoundEnabled(value)
   ElMessage.success(`声音提醒已${value ? '开启' : '关闭'}`)
 }
 
 const handleNotificationTypesChange = (types: string[]) => {
+  notificationManager.setNotificationTypes(types)
   ElMessage.success('通知类型已更新')
 }
 
 const handleDndModeChange = (value: boolean) => {
+  notificationManager.setDndMode(value, notification.dndStart, notification.dndEnd)
   ElMessage.success(`免打扰模式已${value ? '开启' : '关闭'}`)
 }
 
@@ -516,10 +628,18 @@ const handleAutoReplyChange = (value: boolean) => {
 }
 
 // 快捷回复
+const handleAddReplyClick = async () => {
+  showReplyInput.value = true
+  await nextTick()
+  replyInputRef.value?.focus()
+}
+
 const addQuickReply = () => {
   if (newReply.value.trim()) {
     advanced.quickReplies.push(newReply.value.trim())
     newReply.value = ''
+    showReplyInput.value = false
+  } else {
     showReplyInput.value = false
   }
 }
@@ -541,7 +661,31 @@ const handleClearCache = async () => {
       }
     )
 
-    // TODO: 实现清空缓存逻辑
+    // 清空 localStorage 中的缓存（保留用户信息和设置）
+    const user = localStorage.getItem('user')
+    const settings = localStorage.getItem('settings')
+
+    localStorage.clear()
+
+    // 恢复必要的数据
+    if (user) localStorage.setItem('user', user)
+    if (settings) localStorage.setItem('settings', settings)
+
+    // 清空 sessionStorage
+    sessionStorage.clear()
+
+    // 清空所有 indexedDB 数据库（可选）
+    try {
+      const databases = await indexedDB.databases()
+      for (const database of databases) {
+        if (database.name) {
+          indexedDB.deleteDatabase(database.name)
+        }
+      }
+    } catch (e) {
+      console.warn('清理 indexedDB 失败:', e)
+    }
+
     cacheSize.value = 0
     ElMessage.success('缓存已清空')
   } catch {
@@ -649,6 +793,9 @@ const handleResetAll = async () => {
       quickReplies: ['好的', '收到', '谢谢', '需要帮助吗?']
     })
 
+    // 应用重置后的设置
+    applyTheme(appearance.theme)
+    handleScaleChange(appearance.scale)
     saveSettings()
     ElMessage.success('已重置为默认设置')
   } catch {
@@ -671,7 +818,24 @@ const formatBytes = (bytes: number): string => {
 }
 
 onMounted(() => {
+  // 初始化语言
+  initLanguage()
   loadSettings()
+  // 初始化主题
+  applyTheme(appearance.theme)
+  // 初始化声音设置
+  sound.setEnabled(notification.sound)
+  // 初始化通知设置
+  notificationManager.setEnabled(notification.desktop)
+  notificationManager.setSoundEnabled(notification.sound)
+  notificationManager.setNotificationTypes(notification.types)
+  notificationManager.setDndMode(notification.dndMode, notification.dndStart, notification.dndEnd)
+  // 监听系统主题变化
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (appearance.theme === 'auto') {
+      applyTheme('auto')
+    }
+  })
 })
 </script>
 

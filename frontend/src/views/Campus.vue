@@ -160,7 +160,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { School, Document, Reading, Bell } from '@element-plus/icons-vue'
 import { campusApi } from '@/api/campus'
-import { notificationsApi } from '@/api/notifications'
+import { notificationApi as notificationsApi } from '@/api/notifications'
 
 // 弹窗显示状态
 const emptyClassroomVisible = ref(false)

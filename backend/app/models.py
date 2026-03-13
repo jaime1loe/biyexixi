@@ -74,6 +74,13 @@ class Knowledge(Base):
     content = Column(Text, nullable=False, comment="知识内容")
     category = Column(String(50), comment="分类")
     tags = Column(String(200), comment="标签，逗号分隔")
+    status = Column(String(20), default="pending", comment="状态: pending=待处理, processing=处理中, completed=已完成, failed=失败")
+    # 审核相关字段
+    uploader_id = Column(Integer, ForeignKey("users.id"), comment="上传者用户ID")
+    reviewer_id = Column(Integer, ForeignKey("users.id"), comment="审核人用户ID")
+    review_status = Column(String(20), default="pending", comment="审核状态: pending=待审核, approved=已通过, rejected=已拒绝")
+    rejection_reason = Column(Text, comment="拒绝原因")
+    # 文件相关字段
     file_name = Column(String(255), comment="文件名")
     file_path = Column(String(255), comment="文件存储路径")
     file_type = Column(String(50), comment="文件类型")
