@@ -15,6 +15,7 @@ class UserBase(BaseModel):
     department: Optional[str] = None
     major: Optional[str] = None
     class_name: Optional[str] = None
+    bio: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -33,6 +34,7 @@ class UserUpdate(BaseModel):
     department: Optional[str] = None
     major: Optional[str] = None
     class_name: Optional[str] = None
+    bio: Optional[str] = None
 
 
 class UserResponse(UserBase):
@@ -48,6 +50,44 @@ class UserLogin(BaseModel):
     """用户登录模型"""
     username: str
     password: str
+
+
+class ProfileChangeCreate(BaseModel):
+    """个人信息修改申请创建"""
+    real_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    major: Optional[str] = None
+    bio: Optional[str] = None
+    reason: str = Field(..., description="修改原因")
+
+
+class ProfileChangeResponse(BaseModel):
+    """个人信息修改申请响应"""
+    id: int
+    user_id: int
+    real_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    major: Optional[str] = None
+    bio: Optional[str] = None
+    reason: str
+    status: str
+    admin_comment: Optional[str] = None
+    reviewed_by: Optional[int] = None
+    created_at: datetime
+    reviewed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ProfileChangeReview(BaseModel):
+    """审核修改申请"""
+    status: str = Field(..., description="审核状态: approved/rejected")
+    admin_comment: Optional[str] = Field(None, description="审核意见")
 
 
 class Token(BaseModel):

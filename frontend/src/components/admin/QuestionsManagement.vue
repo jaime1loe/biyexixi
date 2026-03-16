@@ -101,11 +101,15 @@ const pagination = ref({
 const loadQuestions = async () => {
   loading.value = true
   try {
-    const response = await chatApi.getQuestions({
+    const params: any = {
       skip: (pagination.value.page - 1) * pagination.value.size,
-      limit: pagination.value.size,
-      category: searchForm.value.category
-    })
+      limit: pagination.value.size
+    }
+    // 只有当 category 不为空时才添加
+    if (searchForm.value.category) {
+      params.category = searchForm.value.category
+    }
+    const response = await chatApi.getQuestions(params)
     questions.value = response
     pagination.value.total = response.length
   } catch (error: any) {

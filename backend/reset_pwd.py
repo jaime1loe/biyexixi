@@ -1,0 +1,1 @@
+\"from app.database import engine; from sqlalchemy import text; from app.utils import hash_password; conn = engine.connect(); hashed = hash_password('12345678'); conn.execute(text('UPDATE users SET password_hash = :pwd WHERE username = \\\"admin\\\"'), {'pwd': hashed}); conn.commit(); print('admin√‹¬Î“—÷ÿ÷√'); conn.close()\"  

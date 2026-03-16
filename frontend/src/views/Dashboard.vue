@@ -161,19 +161,27 @@
               <span><el-icon><Clock /></el-icon>最近活动</span>
             </div>
           </template>
-          <div class="activity-list">
+          <div class="activity-list" v-loading="activityLoading">
+            <el-empty v-if="stats.recentActivity.length === 0" description="暂无活动记录" />
             <div
               v-for="(item, index) in stats.recentActivity"
               :key="index"
               class="activity-item"
             >
-              <div class="activity-icon">
-                <el-icon v-if="item.action.includes('提问')"><ChatDotRound /></el-icon>
-                <el-icon v-else-if="item.action.includes('评分')"><Star /></el-icon>
+              <div class="activity-icon" :class="`activity-${item.type}`">
+                <el-icon v-if="item.type === 'upload'"><Upload /></el-icon>
+                <el-icon v-else-if="item.type === 'notification'"><Bell /></el-icon>
+                <el-icon v-else-if="item.type === 'question'"><ChatDotRound /></el-icon>
+                <el-icon v-else-if="item.type === 'rating'"><Star /></el-icon>
                 <el-icon v-else><Document /></el-icon>
               </div>
               <div class="activity-content">
-                <div class="activity-text">{{ item.action }}</div>
+                <div class="activity-text">
+                  <span class="activity-user">{{ item.user }}</span>
+                  <span class="activity-role">{{ item.role }}</span>
+                  <span>{{ item.action }}</span>
+                  <span class="activity-target" v-if="item.target">{{ item.target }}</span>
+                </div>
                 <div class="activity-time">{{ item.time }}</div>
               </div>
             </div>
@@ -199,7 +207,10 @@ import {
   Trophy,
   Clock,
   CaretTop,
-  CaretBottom
+  CaretBottom,
+  Upload,
+  Bell,
+  Document
 } from '@element-plus/icons-vue'
 import { statisticsApi, StatisticsOverview, DailyStatistics, CategoryStatistics } from '@/api/dashboard'
 
@@ -209,11 +220,19 @@ interface DashboardStats {
   avgRating: number
   todayQuestions: number
   popularQuestions: Array<{ question: string; count: number }>
-  recentActivity: Array<{ time: string; action: string }>
+  recentActivity: Array<{
+    type: string
+    user: string
+    role: string
+    action: string
+    target?: string
+    time: string
+  }>
 }
 
 const dateRange = ref<[Date, Date] | null>(null)
 const loading = ref(false)
+const activityLoading = ref(false)
 
 const stats = ref<DashboardStats>({
   totalQuestions: 0,
@@ -303,12 +322,118 @@ async function loadTopQuestions() {
   }
 }
 
+async function loadRecentActivity() {
+  activityLoading.value = true
+  try {
+    // 模拟数据 - 实际应该从API获取
+    setTimeout(() => {
+      const now = new Date()
+      stats.value.recentActivity = [
+        {
+          type: 'upload',
+          user: '张教授',
+          role: '老师',
+          action: '上传了',
+          target: '《高等数学复习资料》',
+          time: formatRelativeTime(now.getTime() - 2 * 60 * 1000)
+        },
+        {
+          type: 'notification',
+          user: '李管理员',
+          role: '管理员',
+          action: '新增了',
+          target: '《期中考试安排通知》',
+          time: formatRelativeTime(now.getTime() - 15 * 60 * 1000)
+        },
+        {
+          type: 'question',
+          user: '王同学',
+          role: '学生',
+          action: '提出了问题',
+          target: '如何计算定积分？',
+          time: formatRelativeTime(now.getTime() - 30 * 60 * 1000)
+        },
+        {
+          type: 'rating',
+          user: '刘同学',
+          role: '学生',
+          action: '评价了',
+          target: '高等数学课程',
+          time: formatRelativeTime(now.getTime() - 45 * 60 * 1000)
+        },
+        {
+          type: 'upload',
+          user: '赵老师',
+          role: '老师',
+          action: '上传了',
+          target: '《大学英语听力材料》',
+          time: formatRelativeTime(now.getTime() - 60 * 60 * 1000)
+        },
+        {
+          type: 'notification',
+          user: '孙管理员',
+          role: '管理员',
+          action: '发布了',
+          target: '图书馆开放时间调整公告',
+          time: formatRelativeTime(now.getTime() - 2 * 60 * 60 * 1000)
+        },
+        {
+          type: 'question',
+          user: '陈同学',
+          role: '学生',
+          action: '收藏了',
+          target: '数据结构学习笔记',
+          time: formatRelativeTime(now.getTime() - 3 * 60 * 60 * 1000)
+        },
+        {
+          type: 'upload',
+          user: '周教授',
+          role: '老师',
+          action: '更新了',
+          target: '《数据结构实验指导书》',
+          time: formatRelativeTime(now.getTime() - 4 * 60 * 60 * 1000)
+        }
+      ]
+      activityLoading.value = false
+    }, 500)
+  } catch (error) {
+    console.error('加载最近活动失败:', error)
+    activityLoading.value = false
+  }
+}
+
+function formatRelativeTime(timestamp: number): string {
+  const now = Date.now()
+  const diff = now - timestamp
+  const minutes = Math.floor(diff / (1000 * 60))
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes}分钟前`
+  if (hours < 24) return `${hours}小时前`
+  if (days < 7) return `${days}天前`
+
+  const date = new Date(timestamp)
+  return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+function getRoleTagType(role: string): string {
+  const roleTypeMap: Record<string, string> = {
+    '老师': 'primary',
+    '管理员': 'danger',
+    '学生': 'success'
+  }
+  return roleTypeMap[role] || 'info'
+}
+
 async function loadStats() {
   await Promise.all([
     loadOverview(),
     loadDailyStats(),
     loadCategoryStats(),
-    loadTopQuestions()
+    loadTopQuestions(),
+    loadRecentActivity()
   ])
 }
 
@@ -639,5 +764,40 @@ onMounted(() => {
 .activity-time {
   font-size: 12px;
   color: #909399;
+}
+
+.activity-icon.activity-upload {
+  background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+}
+
+.activity-icon.activity-notification {
+  background: linear-gradient(135deg, #f56c6c 0%, #f78989 100%);
+}
+
+.activity-icon.activity-question {
+  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+}
+
+.activity-icon.activity-rating {
+  background: linear-gradient(135deg, #e6a23c 0%, #f0c78a 100%);
+}
+
+.activity-user {
+  font-weight: 600;
+  color: #303133;
+  margin-right: 4px;
+}
+
+.activity-role {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.activity-target {
+  color: #409eff;
+  font-weight: 500;
 }
 </style>

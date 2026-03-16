@@ -97,14 +97,6 @@
           <h3>学生评价查询</h3>
           <p>查询和评价学生成绩</p>
         </div>
-        <!-- 学生：我的成绩 -->
-        <div class="quick-access-item" v-if="isStudent" @click="goToPath('/evaluations')">
-          <div class="quick-icon" style="background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);">
-            <el-icon><Trophy /></el-icon>
-          </div>
-          <h3>我的成绩</h3>
-          <p>查看个人学习成绩</p>
-        </div>
       </div>
     </div>
 

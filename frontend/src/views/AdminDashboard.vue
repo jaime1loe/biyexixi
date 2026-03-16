@@ -23,7 +23,6 @@
             <span>问答管理</span>
           </template>
           <el-menu-item index="questions-list">问题列表</el-menu-item>
-          <el-menu-item index="categories">分类管理</el-menu-item>
         </el-sub-menu>
         
         <el-sub-menu index="users">
@@ -73,6 +72,11 @@
           <UsersManagement />
         </div>
 
+        <!-- 角色管理/信息审核 -->
+        <div v-else-if="activeTab === 'roles'" class="tab-content">
+          <ProfileChangeReview />
+        </div>
+
         <!-- 知识库列表 -->
         <div v-else-if="activeTab === 'knowledge-list'" class="tab-content">
           <KnowledgeManagement />
@@ -101,6 +105,7 @@ import { useUserStore } from '@/store/user'
 import QuestionsManagement from '@/components/admin/QuestionsManagement.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import KnowledgeManagement from '@/components/admin/KnowledgeManagement.vue'
+import ProfileChangeReview from '@/components/admin/ProfileChangeReview.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -110,8 +115,8 @@ const activeTab = ref('questions-list')
 const currentTabName = computed(() => {
   const tabMap: Record<string, string> = {
     'questions-list': '问题列表',
-    'categories': '分类管理',
     'users-list': '用户列表',
+    'profile-change-review': '信息审核',
     'roles': '角色管理',
     'knowledge-list': '文档列表',
     'knowledge-review': '审核管理',

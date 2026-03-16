@@ -33,11 +33,6 @@
                   <el-icon><EditPen /></el-icon>
                   学生评价查询
                 </el-dropdown-item>
-                <!-- 学生功能：我的成绩 -->
-                <el-dropdown-item v-if="isStudent" command="/evaluations">
-                  <el-icon><Trophy /></el-icon>
-                  我的成绩
-                </el-dropdown-item>
                 <el-dropdown-item command="/favorites">
                   <el-icon><Star /></el-icon>
                   我的收藏

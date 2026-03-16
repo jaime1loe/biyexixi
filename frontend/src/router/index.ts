@@ -171,15 +171,19 @@ router.beforeEach((to, _from, next) => {
     }
   }
 
-  // 管理员不能访问普通用户页面（除了管理后台和欢迎页面）
+  // 管理员不能访问普通用户页面（除了管理后台、欢迎页面和个人中心）
   if (token) {
     // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
     let userInfoStr = sessionStorage.getItem('userInfo')
     if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
     const userInfo = JSON.parse(userInfoStr || '{}')
-    
-    // 如果是管理员，且不是访问管理后台相关页面或欢迎页面，则重定向到管理后台
-    if (userInfo.role === 'admin' && !to.path.startsWith('/admin') && to.path !== '/admin/login' && to.path !== '/') {
+
+    // 如果是管理员，且不是访问管理后台相关页面、欢迎页面或个人中心，则重定向到管理后台
+    if (userInfo.role === 'admin' &&
+        !to.path.startsWith('/admin') &&
+        to.path !== '/admin/login' &&
+        to.path !== '/' &&
+        to.path !== '/profile') {
       console.log('管理员访问非管理页面，重定向到管理后台')
       next('/admin')
       return
