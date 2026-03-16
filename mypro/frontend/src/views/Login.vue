@@ -1,5 +1,15 @@
 <template>
   <div class="login-container">
+    <!-- 科技装饰元素 -->
+    <div class="tech-decoration">
+      <span class="tech-element">📚</span>
+      <span class="tech-element">💡</span>
+      <span class="tech-element">🔬</span>
+      <span class="tech-element">🎓</span>
+      <span class="tech-element">💻</span>
+      <span class="tech-element">🔗</span>
+    </div>
+    
     <div class="login-box">
       <div class="login-header">
         <div class="logo">
@@ -36,6 +46,17 @@
                 show-password
                 @keyup.enter="handleLogin"
               />
+            </el-form-item>
+
+            <el-form-item label="登录身份" prop="loginRole">
+              <el-select
+                v-model="loginForm.loginRole"
+                placeholder="请选择登录身份"
+                style="width: 100%"
+              >
+                <el-option label="学生" value="student" />
+                <el-option label="教师" value="teacher" />
+              </el-select>
             </el-form-item>
 
             <el-form-item>
@@ -105,23 +126,6 @@
               />
             </el-form-item>
 
-            <el-form-item label="真实姓名" prop="real_name">
-              <el-input
-                v-model="registerForm.real_name"
-                placeholder="请输入真实姓名"
-                :prefix-icon="User"
-                clearable
-              />
-            </el-form-item>
-
-            <el-form-item label="学号" prop="student_id">
-              <el-input
-                v-model="registerForm.student_id"
-                placeholder="请输入学号(学生/教师必填)"
-                clearable
-              />
-            </el-form-item>
-
             <el-form-item label="身份" prop="role">
               <el-select
                 v-model="registerForm.role"
@@ -130,7 +134,6 @@
               >
                 <el-option label="学生" value="student" />
                 <el-option label="教师" value="teacher" />
-                <el-option label="管理员" value="admin" />
               </el-select>
             </el-form-item>
 
@@ -185,15 +188,14 @@ const registerFormRef = ref<FormInstance>()
 
 const loginForm = reactive({
   username: '',
-  password: ''
+  password: '',
+  loginRole: ''
 })
 
 const registerForm = reactive({
   username: '',
   password: '',
   confirmPassword: '',
-  real_name: '',
-  student_id: '',
   email: '',
   role: ''
 })
@@ -241,7 +243,8 @@ const validateEmail = (rule: any, value: any, callback: any) => {
 
 const loginRules: FormRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  loginRole: [{ required: true, message: '请选择登录身份', trigger: 'change' }]
 }
 
 const registerRules: FormRules = {
@@ -281,19 +284,44 @@ async function handleLogin() {
         avatar: userInfo.avatar || '',
         email: userInfo.email || ''
       })
+
+      // 验证用户选择的角色与实际角色是否匹配
+      const selectedRole = loginForm.loginRole
+      const actualRole = userInfo.role
+
+      if (selectedRole !== actualRole) {
+        ElMessage.error(`您选择的身份(${getRoleLabel(selectedRole)})与您的实际身份(${getRoleLabel(actualRole)})不匹配，请重新选择`)
+        // 清除token
+        userStore.clearUserInfo()
+        sessionStorage.removeItem('token')
+        return
+      }
+
+      // 根据角色跳转不同页面
+      ElMessage.success('登录成功!')
+      if (selectedRole === 'admin') {
+        // 管理员跳转到管理后台
+        await router.push('/admin')
+      } else {
+        // 学生和教师跳转到系统首页
+        await router.push('/home')
+      }
     } catch (userError: any) {
       console.error('获取用户信息失败:', userError)
       // 获取用户信息失败，但登录成功，使用基本信息继续
       userStore.setUserInfo({
         username: loginData.username,
-        role: 'student' // 默认角色
+        role: loginForm.loginRole
       })
+      
+      // 根据选择的角色跳转
+      ElMessage.success('登录成功!')
+      if (loginForm.loginRole === 'admin') {
+        await router.push('/admin')
+      } else {
+        await router.push('/home')
+      }
     }
-
-    ElMessage.success('登录成功!')
-    console.log('准备跳转到首页...')
-    await router.push('/home')
-    console.log('跳转完成')
   } catch (error: any) {
     console.error('登录失败:', error)
     const errorMessage = error.response?.data?.detail || '登录失败，请检查用户名和密码'
@@ -320,8 +348,6 @@ async function handleRegister() {
     const registerData: RegisterRequest = {
       username: registerForm.username,
       password: registerForm.password,
-      real_name: registerForm.real_name || undefined,
-      student_id: registerForm.student_id || undefined,
       email: registerForm.email,
       role: registerForm.role
     }
@@ -341,6 +367,16 @@ async function handleRegister() {
     loading.value = false
   }
 }
+
+// 获取角色标签
+function getRoleLabel(role: string): string {
+  const labelMap: Record<string, string> = {
+    admin: '管理员',
+    teacher: '教师',
+    student: '学生'
+  }
+  return labelMap[role] || role
+}
 </script>
 
 <style scoped>
@@ -349,23 +385,127 @@ async function handleRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+  background-image: url('../../login.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 背景图片遮罩 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+/* 科技网格背景 */
+.login-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background-image:
+    linear-gradient(rgba(64, 158, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(64, 158, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+/* 浮动科技元素 - 书籍/灯泡/网络节点 */
+.tech-decoration {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.tech-element {
+  position: absolute;
+  opacity: 0.15;
+  color: #409eff;
+  animation: float 6s ease-in-out infinite;
+}
+
+.tech-element:nth-child(1) {
+  top: 10%;
+  left: 10%;
+  font-size: 60px;
+  animation-delay: 0s;
+}
+
+.tech-element:nth-child(2) {
+  top: 20%;
+  right: 15%;
+  font-size: 48px;
+  animation-delay: 1s;
+}
+
+.tech-element:nth-child(3) {
+  bottom: 25%;
+  left: 8%;
+  font-size: 52px;
+  animation-delay: 2s;
+}
+
+.tech-element:nth-child(4) {
+  bottom: 15%;
+  right: 10%;
+  font-size: 44px;
+  animation-delay: 3s;
+}
+
+.tech-element:nth-child(5) {
+  top: 40%;
+  left: 5%;
+  font-size: 36px;
+  animation-delay: 4s;
+}
+
+.tech-element:nth-child(6) {
+  top: 35%;
+  right: 5%;
+  font-size: 40px;
+  animation-delay: 5s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
 }
 
 .login-box {
   width: 100%;
   max-width: 480px;
-  background: #fff;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
 .login-header {
   text-align: center;
   padding: 40px 40px 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .logo {
@@ -389,6 +529,7 @@ async function handleRegister() {
 
 .login-tabs {
   padding: 20px 40px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 :deep(.el-tabs__nav-wrap::after) {
@@ -418,7 +559,7 @@ async function handleRegister() {
   height: 44px;
   font-size: 16px;
   font-weight: 500;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #409eff 0%, #764ba2 100%);
   border: none;
   transition: all 0.3s;
 }
@@ -436,11 +577,23 @@ async function handleRegister() {
   text-align: center;
   padding: 20px;
   border-top: 1px solid #ebeef5;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .login-footer p {
   margin: 0;
   font-size: 12px;
   color: #909399;
+}
+
+
+/* 输入框和下拉框半透明背景 */
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 选择器下拉框半透明背景 */
+:deep(.el-select .el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.6) !important;
 }
 </style>

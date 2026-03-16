@@ -21,23 +21,36 @@ async def create_question(
     current_user = Depends(get_current_user)
 ):
     """用户提问接口"""
-    # 创建问题记录
-    db_question = Question(
-        user_id=current_user.id,
-        question=question.question,
-        category=question.category
-    )
-    db.add(db_question)
-    db.commit()
-    db.refresh(db_question)
+    # 检查是否已有相同问题
+    existing_question = db.query(Question).filter(
+        Question.question == question.question
+    ).first()
 
-    # 这里可以调用AI服务生成答案
-    # 暂时返回占位答案
-    db_question.answer = "这是一个示例答案。AI功能将在后续阶段实现。"
-    db.commit()
-    db.refresh(db_question)
+    if existing_question:
+        # 如果问题已存在，增加提问次数
+        existing_question.ask_count += 1
+        db.commit()
+        db.refresh(existing_question)
+        return existing_question
+    else:
+        # 创建新问题记录
+        db_question = Question(
+            user_id=current_user.id,
+            question=question.question,
+            category=question.category,
+            ask_count=1  # 新问题默认提问次数为1
+        )
+        db.add(db_question)
+        db.commit()
+        db.refresh(db_question)
 
-    return db_question
+        # 这里可以调用AI服务生成答案
+        # 暂时返回占位答案
+        db_question.answer = "这是一个示例答案。AI功能将在后续阶段实现。"
+        db.commit()
+        db.refresh(db_question)
+
+        return db_question
 
 
 @router.get("/my", response_model=List[QuestionResponse], summary="获取我的问题列表")

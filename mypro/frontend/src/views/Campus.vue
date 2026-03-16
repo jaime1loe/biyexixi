@@ -216,6 +216,11 @@ const navigateToNotifications = () => {
   loadNotifications()
 }
 
+const navigateToTeacherEvaluation = () => {
+  teacherEvaluationVisible.value = true
+  loadTeacherEvaluations()
+}
+
 // 查询方法
 const searchEmptyClassroom = async () => {
   if (!searchForm.value.building || !searchForm.value.day || !searchForm.value.section) {

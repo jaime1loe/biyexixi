@@ -17,8 +17,10 @@ import Layout from '@/components/Layout.vue'
 const route = useRoute()
 const userStore = useUserStore()
 
-// 登录页面不使用布局组件
-const currentLayout = computed(() => route.path === '/login' ? 'div' : Layout)
+// 登录页面、欢迎页面和管理员页面不使用布局组件
+const currentLayout = computed(() =>
+  route.path === '/' || route.path === '/login' || route.path.startsWith('/admin') ? 'div' : Layout
+)
 
 onMounted(() => {
   // 从 sessionStorage 初始化用户状态 (关闭浏览器后自动清除)

@@ -1,18 +1,22 @@
 import sys
+import os
 from pathlib import Path
 
 # 添加项目根目录到Python路径
-sys.path.insert(0, str(Path(__file__).parent.parent))
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
+# 现在使用相对导入
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.app.config import settings
-from backend.app.database import engine, Base
-from backend.app.routers import auth, questions, knowledge, feedback, statistics, users, favorites, notifications, campus
-from backend.app.exceptions import (
+# 使用相对导入避免路径问题
+from app.config import settings
+from app.database import engine, Base
+from app.routers import auth, questions, knowledge, feedback, statistics, users, favorites, notifications, campus, profile_changes
+from app.exceptions import (
     sqlalchemy_exception_handler,
     http_exception_handler,
     validation_exception_handler
@@ -63,6 +67,7 @@ app.include_router(statistics.router, prefix="/api/statistics", tags=["统计"])
 app.include_router(favorites.router, prefix="/api/favorites", tags=["收藏"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["通知"])
 app.include_router(campus.router, prefix="/api/campus", tags=["校园服务"])
+app.include_router(profile_changes.router, tags=["信息修改"])
 
 
 @app.get("/", summary="健康检查")

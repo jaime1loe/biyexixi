@@ -1,15 +1,24 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/login'
+    name: 'Welcome',
+    component: () => import('@/views/Welcome.vue'),
+    meta: { title: '欢迎', requiresAuth: false }
   },
   {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
     meta: { title: '登录/注册', requiresAuth: false }
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: () => import('@/views/AdminLogin.vue'),
+    meta: { title: '管理员登录', requiresAuth: false }
   },
   {
     path: '/home',
@@ -33,7 +42,13 @@ const routes: RouteRecordRaw[] = [
     path: '/knowledge',
     name: 'Knowledge',
     component: () => import('@/views/Knowledge.vue'),
-    meta: { title: '知识库管理', requiresAuth: true }
+    meta: { title: '知识库', requiresAuth: true }
+  },
+  {
+    path: '/evaluations',
+    name: 'Evaluations',
+    component: () => import('@/views/Evaluations.vue'),
+    meta: { title: '学生评价查询', requiresAuth: true }
   },
   {
     path: '/dashboard',
@@ -62,7 +77,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     name: 'Admin',
-    component: () => import('@/views/Admin.vue'),
+    component: () => import('@/views/AdminDashboard.vue'),
     meta: { title: '管理后台', requiresAuth: true, requiresAdmin: true }
   },
   {
@@ -90,11 +105,12 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   document.title = `${to.meta.title || '高校知识库智能答疑系统'}`
 
-  // 使用 sessionStorage 而不是 localStorage,关闭浏览器后自动清除
+  // 只从sessionStorage读取token，关闭浏览器后自动失效
   const token = sessionStorage.getItem('token')
+  
   const requiresAuth = to.meta.requiresAuth !== false
   const requiresAdmin = to.meta.requiresAdmin === true
 
@@ -110,10 +126,23 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  // 登录页处理:如果有token,跳转到首页
+  // 已登录用户访问登录页面的处理（不包括根路径）
+  // 注意：/admin/login 页面不进行自动跳转，允许已登录用户访问以重新进行管理员登录
   if (to.path === '/login' && token) {
-    console.log('已登录,跳转到首页')
-    next('/home')
+    console.log('已登录用户访问登录页，跳转到对应首页')
+
+    // 只从sessionStorage读取用户信息
+    const userInfoStr = sessionStorage.getItem('userInfo')
+    const userInfo = JSON.parse(userInfoStr || '{}')
+
+    // 检查是否是管理员
+    if (userInfo.role === 'admin') {
+      // 管理员用户，跳转到管理后台
+      next('/admin')
+    } else {
+      // 普通用户，跳转到首页
+      next('/home')
+    }
     return
   }
 
@@ -126,9 +155,31 @@ router.beforeEach((to, from, next) => {
 
   // 需要管理员权限的页面
   if (requiresAdmin && token) {
-    const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}')
+    // 只从sessionStorage读取用户信息
+    const userInfoStr = sessionStorage.getItem('userInfo')
+    const userInfo = JSON.parse(userInfoStr || '{}')
+    
     if (userInfo.role !== 'admin') {
+      ElMessage.error('您不是管理员，无法访问管理后台')
       next('/home')
+      return
+    }
+  }
+
+  // 管理员不能访问普通用户页面（除了管理后台、欢迎页面和个人中心）
+  if (token) {
+    // 只从sessionStorage读取用户信息
+    const userInfoStr = sessionStorage.getItem('userInfo')
+    const userInfo = JSON.parse(userInfoStr || '{}')
+
+    // 如果是管理员，且不是访问管理后台相关页面、欢迎页面或个人中心，则重定向到管理后台
+    if (userInfo.role === 'admin' &&
+        !to.path.startsWith('/admin') &&
+        to.path !== '/admin/login' &&
+        to.path !== '/' &&
+        to.path !== '/profile') {
+      console.log('管理员访问非管理页面，重定向到管理后台')
+      next('/admin')
       return
     }
   }

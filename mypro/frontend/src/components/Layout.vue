@@ -2,14 +2,17 @@
   <el-container class="layout-container">
     <el-header>
       <div class="header-content">
-        <h1 class="system-title">高效智能问答系统</h1>
+        <div class="header-left">
+          <h1 class="logo-text">高校知识库智能答疑系统</h1>
+        </div>
         <div class="header-actions">
-          <el-dropdown @command="handleMenuCommand">
-            <el-button type="primary" class="home-menu-btn">
-              <el-icon><Menu /></el-icon>
-              首页功能
+          <!-- 首页下拉菜单 -->
+          <el-dropdown @command="handleMenuCommand" trigger="click">
+            <div class="home-dropdown">
+              <el-icon><HomeFilled /></el-icon>
+              <span>首页</span>
               <el-icon><ArrowDown /></el-icon>
-            </el-button>
+            </div>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="/home">
@@ -20,29 +23,33 @@
                   <el-icon><ChatDotRound /></el-icon>
                   智能问答
                 </el-dropdown-item>
+                <el-dropdown-item command="/knowledge">
+                  <el-icon><Collection /></el-icon>
+                  知识库
+                </el-dropdown-item>
                 <el-dropdown-item command="/history">
                   <el-icon><Clock /></el-icon>
                   问答历史
-                </el-dropdown-item>
-                <el-dropdown-item command="/knowledge">
-                  <el-icon><Document /></el-icon>
-                  知识库管理
                 </el-dropdown-item>
                 <el-dropdown-item command="/favorites">
                   <el-icon><Star /></el-icon>
                   我的收藏
                 </el-dropdown-item>
+                <el-dropdown-item command="/evaluations" v-if="isTeacher || isAdmin">
+                  <el-icon><Reading /></el-icon>
+                  学生评价查询
+                </el-dropdown-item>
+                <el-dropdown-item command="/dashboard" v-if="isTeacher || isAdmin">
+                  <el-icon><DataAnalysis /></el-icon>
+                  数据统计
+                </el-dropdown-item>
                 <el-dropdown-item command="/campus">
                   <el-icon><School /></el-icon>
                   校园服务
                 </el-dropdown-item>
-                <el-dropdown-item command="/dashboard">
-                  <el-icon><DataAnalysis /></el-icon>
-                  数据统计
-                </el-dropdown-item>
-                <el-dropdown-item v-if="isAdmin" command="/admin">
-                  <el-icon><Management /></el-icon>
-                  管理后台
+                <el-dropdown-item command="/notifications">
+                  <el-icon><Bell /></el-icon>
+                  通知公告
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -91,15 +98,15 @@ import {
   UserFilled,
   Setting,
   SwitchButton,
-  Menu,
   HomeFilled,
   ChatDotRound,
+  Collection,
   Clock,
-  Document,
   Star,
-  School,
+  Reading,
   DataAnalysis,
-  Management
+  School,
+  Bell
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 
@@ -108,6 +115,8 @@ const userStore = useUserStore()
 
 const userInfo = computed(() => userStore.userInfo)
 const isAdmin = computed(() => userInfo.value?.role === 'admin')
+const isTeacher = computed(() => userInfo.value?.role === 'teacher')
+const isStudent = computed(() => userInfo.value?.role === 'student')
 
 function handleMenuCommand(path: string) {
   router.push(path)
@@ -130,7 +139,7 @@ async function handleUserCommand(command: string) {
         })
         userStore.logout()
         ElMessage.success('已退出登录')
-        router.push('/login')
+        router.push('/')
       } catch {
         // 用户取消
       }
@@ -160,12 +169,17 @@ async function handleUserCommand(command: string) {
   align-items: center;
 }
 
-.system-title {
-  font-size: 28px;
-  font-weight: 700;
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 600;
   color: #fff;
   margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
 }
 
 .header-actions {
@@ -174,22 +188,26 @@ async function handleUserCommand(command: string) {
   gap: 16px;
 }
 
-.home-menu-btn {
-  background-color: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
-  font-size: 16px;
-  padding: 12px 24px;
-  font-weight: 500;
+.home-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 8px;
   transition: all 0.3s;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
 }
 
-.home-menu-btn:hover {
+.home-dropdown:hover {
   background-color: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.home-dropdown span {
+  font-weight: 500;
+  font-size: 15px;
 }
 
 .user-dropdown {

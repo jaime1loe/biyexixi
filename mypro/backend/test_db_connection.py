@@ -16,7 +16,7 @@ try:
         host='localhost',
         port=3306,
         user='root',
-        password='20040618',
+        password='12345678',
         connect_timeout=5
     )
     print("   [OK] 成功连接到MySQL服务器")
@@ -28,7 +28,7 @@ try:
         host='localhost',
         port=3306,
         user='root',
-        password='20040618',
+        password='12345678',
         database='qa_system',
         connect_timeout=5
     )

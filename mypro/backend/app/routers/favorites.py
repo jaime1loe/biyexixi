@@ -1,115 +1,99 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from sqlalchemy import desc
-
 from app.database import get_db
-from app.models import Favorite, Question, User
-from app.schemas import FavoriteCreate, FavoriteResponse, QuestionResponse
 from app.dependencies import get_current_user
+from app.models import User, Question, Favorite
+from app.schemas import FavoriteCreate, FavoriteResponse
 
 router = APIRouter()
 
-
-@router.post("/", response_model=FavoriteResponse, summary="收藏问题")
+@router.post("/", response_model=FavoriteResponse)
 async def create_favorite(
-    favorite: FavoriteCreate,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    favorite_data: FavoriteCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """收藏问题"""
+    """添加收藏"""
     # 检查问题是否存在
-    question = db.query(Question).filter(Question.id == favorite.question_id).first()
+    question = db.query(Question).filter(Question.id == favorite_data.question_id).first()
     if not question:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="问题不存在"
-        )
+        raise HTTPException(status_code=404, detail="问题不存在")
 
-    # 检查是否已收藏
+    # 检查是否已经收藏
     existing = db.query(Favorite).filter(
         Favorite.user_id == current_user.id,
-        Favorite.question_id == favorite.question_id
+        Favorite.question_id == favorite_data.question_id
     ).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="已经收藏过了"
-        )
+        raise HTTPException(status_code=400, detail="已经收藏过此问题")
 
-    db_favorite = Favorite(
+    # 创建收藏
+    favorite = Favorite(
         user_id=current_user.id,
-        question_id=favorite.question_id
+        question_id=favorite_data.question_id
     )
-    db.add(db_favorite)
+    db.add(favorite)
     db.commit()
-    db.refresh(db_favorite)
+    db.refresh(favorite)
 
-    return db_favorite
+    return FavoriteResponse(
+        id=favorite.id,
+        user_id=favorite.user_id,
+        question_id=favorite.question_id,
+        question=question.question,
+        answer=question.answer,
+        created_at=favorite.created_at
+    )
 
+@router.get("/", response_model=List[FavoriteResponse])
+async def get_favorites(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取用户的收藏列表"""
+    favorites = db.query(Favorite).filter(Favorite.user_id == current_user.id).offset(skip).limit(limit).all()
+    result = []
+    for fav in favorites:
+        question = db.query(Question).filter(Question.id == fav.question_id).first()
+        if question:
+            result.append(FavoriteResponse(
+                id=fav.id,
+                user_id=fav.user_id,
+                question_id=fav.question_id,
+                question=question.question,
+                answer=question.answer,
+                created_at=fav.created_at
+            ))
+    return result
 
-@router.delete("/{favorite_id}", summary="取消收藏")
+@router.delete("/{favorite_id}")
 async def delete_favorite(
     favorite_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """取消收藏"""
-    favorite = db.query(Favorite).filter(Favorite.id == favorite_id).first()
+    favorite = db.query(Favorite).filter(
+        Favorite.id == favorite_id,
+        Favorite.user_id == current_user.id
+    ).first()
     if not favorite:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="收藏不存在"
-        )
-
-    if favorite.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="无权取消他人的收藏"
-        )
+        raise HTTPException(status_code=404, detail="收藏记录不存在")
 
     db.delete(favorite)
     db.commit()
-    return {"message": "取消收藏成功"}
+    return {"message": "删除成功"}
 
-
-@router.get("/", response_model=List[FavoriteResponse], summary="获取我的收藏列表")
-async def get_my_favorites(
-    skip: int = 0,
-    limit: int = 20,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
-):
-    """获取当前用户的收藏列表"""
-    favorites = db.query(Favorite).filter(
-        Favorite.user_id == current_user.id
-    ).order_by(desc(Favorite.created_at)).offset(skip).limit(limit).all()
-    
-    # 构建响应数据，包含问题和回答内容
-    favorite_responses = []
-    for favorite in favorites:
-        question = db.query(Question).filter(Question.id == favorite.question_id).first()
-        if question:
-            favorite_data = {
-                "id": favorite.id,
-                "user_id": favorite.user_id,
-                "question_id": favorite.question_id,
-                "created_at": favorite.created_at,
-                "question": question.question,
-                "answer": question.answer
-            }
-            favorite_responses.append(favorite_data)
-    
-    return favorite_responses
-
-
-@router.get("/check/{question_id}", summary="检查是否已收藏")
+@router.get("/check/{question_id}")
 async def check_favorite(
     question_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """检查某个问题是否已被当前用户收藏"""
+    """检查问题是否已收藏"""
     favorite = db.query(Favorite).filter(
         Favorite.user_id == current_user.id,
         Favorite.question_id == question_id

@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKe
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from backend.app.database import Base
+from app.database import Base
 
 
 class User(Base):
@@ -21,6 +21,7 @@ class User(Base):
     department = Column(String(50), comment="院系")
     major = Column(String(50), comment="专业")
     class_name = Column(String(50), comment="班级")
+    bio = Column(Text, comment="个人简介")
     is_active = Column(Integer, default=1, comment="是否激活: 1=激活, 0=禁用")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
@@ -28,6 +29,32 @@ class User(Base):
     # 关系
     questions = relationship("Question", back_populates="user")
     feedbacks = relationship("Feedback", back_populates="user")
+    profile_changes = relationship("ProfileChangeRequest", foreign_keys="ProfileChangeRequest.user_id", back_populates="user")
+    reviewed_changes = relationship("ProfileChangeRequest", foreign_keys="ProfileChangeRequest.reviewed_by", back_populates="reviewer")
+
+
+class ProfileChangeRequest(Base):
+    """个人信息修改申请表"""
+    __tablename__ = "profile_change_requests"
+
+    id = Column(Integer, primary_key=True, index=True, comment="申请ID")
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, comment="用户ID")
+    real_name = Column(String(50), comment="真实姓名")
+    email = Column(String(100), comment="邮箱")
+    phone = Column(String(20), comment="电话")
+    department = Column(String(50), comment="院系")
+    major = Column(String(50), comment="专业")
+    bio = Column(Text, comment="个人简介")
+    reason = Column(Text, comment="修改原因")
+    status = Column(String(20), default="pending", comment="状态: pending/approved/rejected")
+    admin_comment = Column(Text, comment="管理员审核意见")
+    reviewed_by = Column(Integer, ForeignKey("users.id"), comment="审核管理员ID")
+    created_at = Column(DateTime, default=datetime.now, comment="申请时间")
+    reviewed_at = Column(DateTime, comment="审核时间")
+
+    # 关系
+    user = relationship("User", foreign_keys=[user_id], back_populates="profile_changes")
+    reviewer = relationship("User", foreign_keys=[reviewed_by], back_populates="reviewed_changes")
 
 
 class Question(Base):
@@ -40,6 +67,7 @@ class Question(Base):
     answer = Column(Text, comment="答案内容")
     category = Column(String(50), comment="问题分类")
     views = Column(Integer, default=0, comment="浏览次数")
+    ask_count = Column(Integer, default=1, comment="提问次数")
     is_public = Column(Integer, default=1, comment="是否公开: 1=公开, 0=私密")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")

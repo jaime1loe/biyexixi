@@ -37,15 +37,16 @@
             </div>
             <div class="item-actions">
               <el-tag v-if="item.category" size="small">{{ item.category }}</el-tag>
-              <el-button 
-                link 
-                :type="item.is_favorited ? 'warning' : 'primary'" 
-                :icon="StarFilled" 
+              <div
+                class="favorite-wrapper"
+                :class="{ favorited: item.is_favorited }"
                 @click="handleFavorite(item)"
-                :loading="item.favoriteLoading"
               >
-                {{ item.is_favorited ? '已收藏' : '收藏' }}
-              </el-button>
+                <el-icon class="star-icon">
+                  <StarFilled />
+                </el-icon>
+                <span class="favorite-text">{{ item.is_favorited ? '已收藏' : '收藏' }}</span>
+              </div>
               <el-button link type="primary" :icon="View" @click="handleView(item)">查看</el-button>
             </div>
           </div>
@@ -134,13 +135,14 @@ async function loadHistory() {
     const historyWithFavorites = await Promise.all(
       data.map(async (item) => {
         try {
-          const response = await favoritesApi.check(item.id)
+          const response: any = await favoritesApi.check(item.id)
           return {
             ...item,
-            is_favorited: response.data.is_favorited,
+            is_favorited: response.is_favorited,
             favoriteLoading: false
           }
         } catch (error) {
+          console.error('检查收藏状态失败:', error)
           return {
             ...item,
             is_favorited: false,
@@ -313,6 +315,47 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.favorite-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 16px;
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.favorite-wrapper:hover {
+  background: #f0f9ff;
+}
+
+.favorite-wrapper .star-icon {
+  font-size: 16px;
+  color: #c0c4cc;
+  transition: all 0.3s;
+}
+
+.favorite-wrapper.favorited {
+  background: #fdf6ec;
+}
+
+.favorite-wrapper.favorited .star-icon {
+  color: #f6d05b;
+  font-size: 18px;
+}
+
+.favorite-text {
+  font-size: 14px;
+  color: #606266;
+  transition: all 0.3s;
+}
+
+.favorite-wrapper.favorited .favorite-text {
+  color: #e6a23c;
+  font-weight: 500;
 }
 
 .item-content {

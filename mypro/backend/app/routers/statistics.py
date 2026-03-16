@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from app.database import get_db
-from app.models import Statistics, Question, User, Feedback
+from app.models import Question, User, Feedback
 from app.schemas import StatisticsResponse
 from app.dependencies import get_current_admin_user
 
@@ -17,6 +17,15 @@ async def get_statistics_overview(db: Session = Depends(get_db)):
     """获取数据概览统计"""
     # 问题总数
     total_questions = db.query(func.count(Question.id)).scalar() or 0
+
+    # 总回答数（有答案的问题数量）
+    total_answers = db.query(func.count(Question.id)).filter(
+        Question.answer.isnot(None),
+        Question.answer != ""
+    ).scalar() or 0
+
+    # 总提问次数（所有问题的ask_count总和）
+    total_ask_count = db.query(func.sum(Question.ask_count)).scalar() or 0
 
     # 用户总数
     total_users = db.query(func.count(User.id)).scalar() or 0
@@ -46,6 +55,8 @@ async def get_statistics_overview(db: Session = Depends(get_db)):
 
     return {
         "question_count": total_questions,
+        "answer_count": total_answers,
+        "ask_count": total_ask_count,
         "user_count": total_users,
         "knowledge_count": total_knowledge,
         "avg_rating": round(float(avg_rating), 2) if avg_rating else 0,
@@ -110,13 +121,11 @@ async def get_top_questions(
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
-    """获取热门问题（按创建时间倒序）"""
-    from sqlalchemy import and_
-
-    # 先尝试按浏览量排序，如果没有浏览量字段，则按创建时间排序
+    """获取热门问题（按提问次数倒序）"""
     try:
+        # 按提问次数排序，获取热门问题
         questions = db.query(Question).order_by(
-            desc(Question.created_at)
+            desc(Question.ask_count)
         ).limit(limit).all()
 
         # 格式化返回数据
@@ -126,9 +135,11 @@ async def get_top_questions(
                 "id": q.id,
                 "question": q.question,
                 "answer": q.answer,
+                "ask_count": q.ask_count or 1,
                 "views": getattr(q, 'views', 0) or 0,
-                "created_at": q.created_at.isoformat() if q.created_at else None
+                "created_at": q.created_at.isoformat() if q.created_at else ""
             })
+        
         return result
     except Exception as e:
         print(f"获取热门问题出错: {e}")

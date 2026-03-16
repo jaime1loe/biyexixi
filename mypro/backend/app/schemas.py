@@ -15,6 +15,7 @@ class UserBase(BaseModel):
     department: Optional[str] = None
     major: Optional[str] = None
     class_name: Optional[str] = None
+    bio: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -33,6 +34,7 @@ class UserUpdate(BaseModel):
     department: Optional[str] = None
     major: Optional[str] = None
     class_name: Optional[str] = None
+    bio: Optional[str] = None
 
 
 class UserResponse(UserBase):
@@ -48,6 +50,44 @@ class UserLogin(BaseModel):
     """用户登录模型"""
     username: str
     password: str
+
+
+class ProfileChangeCreate(BaseModel):
+    """个人信息修改申请创建"""
+    real_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    major: Optional[str] = None
+    bio: Optional[str] = None
+    reason: str = Field(..., description="修改原因")
+
+
+class ProfileChangeResponse(BaseModel):
+    """个人信息修改申请响应"""
+    id: int
+    user_id: int
+    real_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    major: Optional[str] = None
+    bio: Optional[str] = None
+    reason: str
+    status: str
+    admin_comment: Optional[str] = None
+    reviewed_by: Optional[int] = None
+    created_at: datetime
+    reviewed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ProfileChangeReview(BaseModel):
+    """审核修改申请"""
+    status: str = Field(..., description="审核状态: approved/rejected")
+    admin_comment: Optional[str] = Field(None, description="审核意见")
 
 
 class Token(BaseModel):
@@ -74,6 +114,7 @@ class QuestionResponse(QuestionBase):
     answer: Optional[str] = None
     category: Optional[str] = None
     views: Optional[int] = 0
+    ask_count: Optional[int] = 1
     is_public: Optional[int] = 1
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -129,6 +170,7 @@ class KnowledgeResponse(KnowledgeBase):
     file_path: Optional[str] = None
     file_type: Optional[str] = None
     file_size: Optional[int] = None
+    embedding: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

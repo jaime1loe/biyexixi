@@ -123,7 +123,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Service, Position, ChatDotRound, ChatLineRound, StarFilled, Star, StarFilled as BookmarkFilled, Star as Bookmark } from '@element-plus/icons-vue'
 import { chatApi, Question } from '@/api/chat'
@@ -141,6 +142,7 @@ interface ChatMessage {
 }
 
 const userStore = useUserStore()
+const route = useRoute()
 
 const messages = ref<ChatMessage[]>([
   {
@@ -172,11 +174,13 @@ async function handleSend() {
   if (!inputMessage.value.trim()) return
 
   const userMessage = inputMessage.value
-  messages.value.push({
+  // 先添加用户消息
+  const userMessageObj: ChatMessage = {
     role: 'user',
     content: userMessage,
     timestamp: Date.now()
-  })
+  }
+  messages.value.push(userMessageObj)
   inputMessage.value = ''
   loading.value = true
 
@@ -187,6 +191,11 @@ async function handleSend() {
       question: userMessage,
       category: ''
     })
+
+    // 如果API调用成功且有返回ID，更新用户消息也包含questionId
+    if (response.id) {
+      userMessageObj.questionId = response.id
+    }
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
@@ -199,7 +208,20 @@ async function handleSend() {
     messages.value.push(assistantMessage)
   } catch (error: any) {
     console.error('回答错误:', error)
-    ElMessage.error(error.response?.data?.detail || '抱歉，回答问题时出现错误，请稍后重试')
+    // 如果API调用失败，仍然添加一个AI响应消息
+    const errorMessage: ChatMessage = {
+      role: 'assistant',
+      content: '抱歉，回答问题时出现错误。请检查网络连接或稍后重试。',
+      timestamp: Date.now()
+    }
+    messages.value.push(errorMessage)
+    
+    // 根据错误类型显示不同的提示
+    if (error.response?.status === 401) {
+      ElMessage.warning('请先登录后再提问，问题将不会被保存到历史记录')
+    } else {
+      ElMessage.error(error.response?.data?.detail || '抱歉，回答问题时出现错误，请稍后重试')
+    }
   } finally {
     loading.value = false
     await scrollToBottom()
@@ -229,7 +251,8 @@ async function handleRating(index: number, rating: number) {
 
 async function handleFavorite(index: number) {
   // 检查用户是否登录
-  const token = sessionStorage.getItem('token')
+  let token = sessionStorage.getItem('token')
+  if (!token) token = localStorage.getItem('token')
   if (!token) {
     ElMessage.warning('请先登录后再使用收藏功能')
     return
@@ -283,8 +306,38 @@ function formatMessage(content: string): string {
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
 }
 
+// 处理从查询参数中自动发送的问题
+async function processQueryQuestion() {
+  const queryQuestion = route.query.q as string
+  if (queryQuestion && queryQuestion.trim()) {
+    // 检查是否已经处理过这个问题（避免重复发送）
+    const hasProcessed = messages.value.some(msg => 
+      msg.role === 'user' && msg.content === queryQuestion.trim()
+    )
+    
+    if (!hasProcessed) {
+      // 设置输入框内容
+      inputMessage.value = queryQuestion.trim()
+      
+      // 等待一下让UI更新
+      await nextTick()
+      
+      // 自动发送消息
+      await handleSend()
+    }
+  }
+}
+
+// 监听路由查询参数变化
+watch(() => route.query.q, (newQuestion) => {
+  if (newQuestion) {
+    processQueryQuestion()
+  }
+})
+
 onMounted(() => {
   scrollToBottom()
+  processQueryQuestion()
 })
 </script>
 
