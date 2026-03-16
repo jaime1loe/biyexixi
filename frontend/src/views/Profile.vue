@@ -123,6 +123,15 @@
                   {{ getStatusLabel(request.status) }}
                 </el-tag>
                 <span class="request-reason">{{ request.reason }}</span>
+                <el-button
+                  v-if="request.status === 'pending'"
+                  type="danger"
+                  link
+                  size="small"
+                  @click="handleDeleteRequest(request.id)"
+                >
+                  删除
+                </el-button>
               </div>
               <div v-if="request.admin_comment" class="request-comment">
                 <el-text type="info" size="small">管理员意见: {{ request.admin_comment }}</el-text>
@@ -234,7 +243,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, type FormInstance } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
 import { User, ChatDotRound, DocumentChecked, Star, Calendar, Edit } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { authApi } from '@/api/auth'
@@ -388,8 +397,10 @@ const loadUserInfo = async () => {
     stats.totalRatings = 38
     stats.daysActive = 15
 
-    // 加载修改申请记录
-    loadChangeRequests()
+    // 加载修改申请记录(只在首次加载时获取，避免重复请求)
+    if (changeRequests.value.length === 0) {
+      loadChangeRequests().catch(() => {})
+    }
   } catch (error) {
     console.error('加载用户信息失败:', error)
     // 从sessionStorage读取
@@ -414,9 +425,14 @@ const loadUserInfo = async () => {
 const loadChangeRequests = async () => {
   try {
     const data = await profileChangesApi.getMyRequests()
-    changeRequests.value = data
-  } catch (error) {
+    changeRequests.value = data || []
+  } catch (error: any) {
     console.error('加载修改申请记录失败:', error)
+    // 不显示错误消息，不影响用户体验
+    // 已经在请求配置中设置了 suppressErrorMessage: true
+    changeRequests.value = []
+    // 重新抛出错误，让调用方可以处理
+    throw error
   }
 }
 
@@ -436,7 +452,7 @@ const handleEdit = () => {
 // 取消编辑
 const handleCancel = () => {
   isEditing.value = false
-  editFormRef.value?.resetFields()
+  profileFormRef.value?.resetFields()
 }
 
 // 提交修改申请
@@ -448,23 +464,67 @@ const handleSubmit = async () => {
       submitting.value = true
       try {
         // 提交修改申请
-        await profileChangesApi.submit(editForm)
-
-        ElMessage.success('申请提交成功，请等待管理员审核')
+        const result = await profileChangesApi.submit(editForm)
 
         // 退出编辑模式
         isEditing.value = false
-        editFormRef.value?.resetFields()
+        profileFormRef.value?.resetFields()
 
-        // 重新加载用户信息
-        await loadUserInfo()
+        // 将新申请添加到列表开头（确保数据格式正确）
+        const newRequest = {
+          id: result.id,
+          user_id: result.user_id,
+          real_name: result.real_name,
+          email: result.email,
+          phone: result.phone,
+          department: result.department,
+          major: result.major,
+          bio: result.bio,
+          reason: result.reason,
+          status: result.status || 'pending',
+          created_at: result.created_at || new Date().toISOString()
+        }
+
+        changeRequests.value = [newRequest, ...changeRequests.value]
+
+        // 只有成功后才显示消息
+        ElMessage.success('申请提交成功，请等待管理员审核')
       } catch (error: any) {
-        ElMessage.error(error.response?.data?.detail || '提交申请失败，请重试')
+        console.error('提交修改申请失败:', error)
+        ElMessage.error(error.response?.data?.detail || error.response?.data?.message || '提交申请失败，请重试')
       } finally {
         submitting.value = false
       }
     }
   })
+}
+
+// 删除修改申请
+const handleDeleteRequest = async (requestId: number) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除此修改申请吗？删除后无法恢复。',
+      '删除申请',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    await profileChangesApi.deleteRequest(requestId)
+    ElMessage.success('申请已删除')
+
+    // 从列表中移除
+    const index = changeRequests.value.findIndex(r => r.id === requestId)
+    if (index > -1) {
+      changeRequests.value.splice(index, 1)
+    }
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.response?.data?.detail || '删除失败，请重试')
+    }
+  }
 }
 
 // 获取状态类型

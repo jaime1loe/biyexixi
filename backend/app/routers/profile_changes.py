@@ -120,3 +120,34 @@ def review_change(
     db.commit()
     db.refresh(change_request)
     return change_request
+
+
+@router.delete("/{request_id}")
+def delete_change_request(
+    request_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """删除修改申请（仅限申请本人，且只能删除未审核的申请）"""
+    change_request = db.query(ProfileChangeRequest).filter(
+        ProfileChangeRequest.id == request_id
+    ).first()
+
+    if not change_request:
+        raise HTTPException(status_code=404, detail="申请不存在")
+
+    # 验证是否是申请人本人
+    if change_request.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="无权删除他人的申请")
+
+    # 只能删除未审核的申请
+    if change_request.status != "pending":
+        raise HTTPException(status_code=400, detail="已审核的申请无法删除")
+
+    db.delete(change_request)
+    db.commit()
+    return {"message": "删除成功"}
+
+# 删除申请的路由
+
+

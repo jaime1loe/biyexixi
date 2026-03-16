@@ -23,7 +23,9 @@ cd /d "%~dp0backend"
 tasklist | find /i "python.exe" >nul 2>&1
 if errorlevel 1 (
     echo  正在启动后端服务...
-    start "后端服务" cmd /k "title 后端服务 && python main.py"
+    echo  提示：后端服务将在新窗口中启动
+    echo  请关注"后端服务"窗口，查看启动日志和错误信息
+    start "后端服务" cmd /k "title 后端服务 - 监听端口8000 && python main.py"
     echo  等待后端服务启动...
     timeout /t 8 /nobreak >nul
 
@@ -45,7 +47,9 @@ cd /d "%~dp0frontend"
 tasklist | find /i "node.exe" >nul 2>&1
 if errorlevel 1 (
     echo  正在启动前端服务...
-    start "前端服务" cmd /k "title 前端服务 && npm run dev"
+    echo  提示：前端服务将在新窗口中启动
+    echo  请关注"前端服务"窗口，查看启动日志
+    start "前端服务" cmd /k "title 前端服务 - 监听端口5173 && npm run dev"
     echo  等待前端服务启动...
     timeout /t 10 /nobreak >nul
 

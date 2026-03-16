@@ -32,14 +32,22 @@ request.interceptors.response.use(
     return response.data
   },
   (error) => {
+    // 检查是否需要抑制错误消息显示
+    const suppressError = error.config?.suppressErrorMessage
+
     // 处理401未授权错误 - 只显示错误信息，不自动跳转
     if (error.response?.status === 401) {
       console.log('检测到401错误，显示错误信息但不跳转')
-      ElMessage.error('认证失败：' + (error.response?.data?.detail || '请检查登录状态'))
+      if (!suppressError) {
+        ElMessage.error('认证失败：' + (error.response?.data?.detail || '请检查登录状态'))
+      }
       return Promise.reject(error)
     }
-    
-    ElMessage.error(error.response?.data?.detail || error.response?.data?.message || '请求失败')
+
+    // 如果设置了 suppressErrorMessage 标记，则不显示错误消息
+    if (!suppressError) {
+      ElMessage.error(error.response?.data?.detail || error.response?.data?.message || '请求失败')
+    }
     return Promise.reject(error)
   }
 )

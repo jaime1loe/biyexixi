@@ -35,7 +35,7 @@
 
       <el-table v-loading="loading" :data="questions" stripe style="margin-top: 20px">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="question" label="问题" min-width="250">
+        <el-table-column prop="question" label="问题" min-width="300">
           <template #default="{ row }">
             <div class="text-ellipsis">{{ row.question }}</div>
           </template>
