@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f6c24783-87a0-4890-8424-d1da2790d714" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/add_ask_count_field.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/add_ask_count_field.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/add_bio_column.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/add_bio_column.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/routers/profile_changes.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/routers/profile_changes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_admin_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_admin_user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_backend_errors.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_backend_errors.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_db_connection.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_db_connection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_openapi.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_openapi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_pending.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_pending.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_profile_changes_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_profile_changes_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/check_users.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/check_users.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/debug_start.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/debug_start.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/diagnose_database_issue.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/diagnose_database_issue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/init_favorites_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/init_favorites_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/init_profile_change_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/init_profile_change_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/reset_admin_password.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/reset_admin_password.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/reset_admin_pwd.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/reset_admin_pwd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/reset_pwd.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/reset_pwd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/simple_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/simple_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_api_endpoints.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_api_endpoints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_complete_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_complete_system.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_delete_full.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_delete_full.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_delete_request.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_delete_request.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_delete_route.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_delete_route.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_delete_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_delete_simple.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_delete_via_curl.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_delete_via_curl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_import.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_import.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_login.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_login.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_password_verify.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_password_verify.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_profile_changes.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_profile_changes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_profile_changes_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_profile_changes_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_question_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_question_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/update_all_passwords.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/update_all_passwords.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/check_database_connection.py" beforeDir="false" afterPath="$PROJECT_DIR$/check_database_connection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/check_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/check_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/check_system.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/check_system.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clear_vite_cache.bat" beforeDir="false" afterPath="$PROJECT_DIR$/clear_vite_cache.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diagnose.bat" beforeDir="false" afterPath="$PROJECT_DIR$/diagnose.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diagnose_auth_issue.py" beforeDir="false" afterPath="$PROJECT_DIR$/diagnose_auth_issue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fix_database.bat" beforeDir="false" afterPath="$PROJECT_DIR$/fix_database.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fix_knowledge_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/fix_knowledge_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fix_qa_history.py" beforeDir="false" afterPath="$PROJECT_DIR$/fix_qa_history.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/profileChanges.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/profileChanges.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/KnowledgeManagement.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/KnowledgeManagement.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/ProfileChangeReview.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/ProfileChangeReview.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/QuestionsManagement.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/QuestionsManagement.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/admin/UsersManagement.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/admin/UsersManagement.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/AdminDashboard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/AdminDashboard.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/AdminLogin.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/AdminLogin.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Evaluations.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Evaluations.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Profile.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Profile.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Profile_backup.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Profile_backup.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/Welcome.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/Welcome.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/quick_check.bat" beforeDir="false" afterPath="$PROJECT_DIR$/quick_check.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_issue.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_issue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_mysql.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_mysql.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_profile_changes.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_profile_changes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/个人中心问题排查报告.md" beforeDir="false" afterPath="$PROJECT_DIR$/个人中心问题排查报告.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/后端功能实现报告.md" beforeDir="false" afterPath="$PROJECT_DIR$/后端功能实现报告.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/基于大模型智能体的高校知识库在线答疑系统项目需求调研报告.md" beforeDir="false" afterPath="$PROJECT_DIR$/基于大模型智能体的高校知识库在线答疑系统项目需求调研报告.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/完整启动系统.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/本周项目开发进度报告.md" beforeDir="false" afterPath="$PROJECT_DIR$/本周项目开发进度报告.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/深度清理.bat" beforeDir="false" afterPath="$PROJECT_DIR$/深度清理.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/清理缓存并重启.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/清理项目.bat" beforeDir="false" afterPath="$PROJECT_DIR$/清理项目.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/管理员后台去除首页功能.md" beforeDir="false" afterPath="$PROJECT_DIR$/管理员后台去除首页功能.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/重启后端服务.bat" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3Ak4DLYcaAZEG8NR5RBudBx4uEB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.create_db.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.简历.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "D:\\PyCharm(professor)2023.3.3\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-5a2391486177-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13763.11" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="f6c24783-87a0-4890-8424-d1da2790d714" name="更改" comment="" />
+      <created>1773123114371</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773123114371</updated>
+      <workItem from="1773123116775" duration="806000" />
+      <workItem from="1773129942150" duration="617000" />
+      <workItem from="1773647303510" duration="41000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/main_py$main.coverage" NAME="main 覆盖结果" MODIFIED="1773129946598" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/$main.coverage" NAME="main 覆盖结果" MODIFIED="1773124080504" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/$create_db.coverage" NAME="create_db 覆盖结果" MODIFIED="1773124087741" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
+    <SUITE FILE_PATH="coverage/_py$.coverage" NAME="简历 覆盖结果" MODIFIED="1773647320416" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>
