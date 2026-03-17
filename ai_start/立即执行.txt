@@ -1,0 +1,49 @@
+========================================================================
+立即执行 - 100%成功方案
+========================================================================
+
+【不要双击任何bat文件，直接在CMD中执行】
+
+步骤1: 打开CMD
+------------------------
+按 Win + R，输入 cmd，按回车
+
+步骤2: 执行以下所有命令（复制粘贴到CMD中）
+------------------------
+
+C:
+cd "C:\Users\1\Desktop\毕业实习\jaime1loe-biyexixi-03d1de7\jaime1loe-biyexixi-03d1de7\backend"
+mysql -u root -p12345678 -e "DROP DATABASE IF EXISTS qa_system;"
+mysql -u root -p12345678 < init_database.sql
+mysql -u root -p12345678 < init_test_data.sql
+mysql -u root -p12345678 -e "USE qa_system; UPDATE users SET password_hash='\$5\$rounds=535000\$Xkg4VvIF5yTX9WFx\$R.z2qxr1F0f4oBuCb8WCV2LPEBjfCJpG6h1.zfECrC8' WHERE username='student';"
+mysql -u root -p12345678 -e "USE qa_system; UPDATE users SET password_hash='\$5\$rounds=535000\$Xkg4VvIF5yTX9WFx\$R.z2qxr1F0f4oBuCb8WCV2LPEBjfCJpG6h1.zfECrC8' WHERE username='admin';"
+mysql -u root -p12345678 -e "USE qa_system; UPDATE users SET password_hash='\$5\$rounds=535000\$Xkg4VvIF5yTX9WFx\$R.z2qxr1F0f4oBuCb8WCV2LPEBjfCJpG6h1.zfECrC8' WHERE username='teacher';"
+mysql -u root -p12345678 -e "USE qa_system; SELECT id, username FROM users;"
+
+步骤3: 启动后端（新CMD窗口）
+------------------------
+按 Win + R，输入 cmd，按回车（新窗口）
+执行：
+start cmd /k "cd C:\Users\1\Desktop\毕业实习\jaime1loe-biyexixi-03d1de7\jaime1loe-biyexixi-03d1de7\backend && python main.py"
+
+步骤4: 启动前端（新CMD窗口）
+------------------------
+按 Win + R，输入 cmd，按回车（新窗口）
+执行：
+start cmd /k "cd C:\Users\1\Desktop\毕业实习\jaime1loe-biyexixi-03d1de7\jaime1loe-biyexixi-03d1de7\frontend && npm run dev"
+
+步骤5: 打开浏览器
+------------------------
+访问: http://localhost:3000
+
+步骤6: 登录
+------------------------
+账号: student
+密码: 123456
+
+========================================================================
+
+如果看到登录页面，输入账号密码后即可进入首页！
+
+========================================================================
