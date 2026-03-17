@@ -4,12 +4,9 @@
     <div
       class="hero-section"
       :style="{
-        backgroundImage: `url('https://images.unsplash.com/photo-1770368437389-86bde15fcb33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`
+        backgroundImage: `url('@/../m_backg.jpg')`
       }"
     >
-      <!-- 渐变遮罩层 -->
-      <div class="hero-overlay"></div>
-
       <!-- 内容层 -->
       <div class="hero-content-wrapper">
         <!-- 英雄内容 -->
@@ -520,12 +517,6 @@ onMounted(() => {
   min-height: 420px;
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(30, 58, 138, 0.9) 0%, rgba(67, 56, 202, 0.85) 50%, rgba(180, 83, 9, 0.8) 100%);
-}
-
 .hero-content-wrapper {
   position: relative;
   z-index: 10;
@@ -677,14 +668,16 @@ onMounted(() => {
   color: #fff;
   margin: 0 0 16px 0;
   font-weight: 700;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .hero-subtitle {
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0 0 32px 0;
   max-width: 560px;
   line-height: 1.6;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hero-actions {
@@ -740,14 +733,15 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 16px 48px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 12px;
   color: #fff;
   backdrop-filter: blur(8px);
   cursor: default;
   user-select: none;
   transition: transform 0.3s ease;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .floating-btn .el-icon {
@@ -757,6 +751,7 @@ onMounted(() => {
 .floating-btn span {
   font-size: 20px;
   font-weight: 500;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* 左右错落 - 不同按钮不同位置 */
