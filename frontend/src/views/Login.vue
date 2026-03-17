@@ -1,5 +1,15 @@
 <template>
   <div class="login-container">
+    <!-- 科技装饰元素 -->
+    <div class="tech-decoration">
+      <span class="tech-element">📚</span>
+      <span class="tech-element">💡</span>
+      <span class="tech-element">🔬</span>
+      <span class="tech-element">🎓</span>
+      <span class="tech-element">💻</span>
+      <span class="tech-element">🔗</span>
+    </div>
+    
     <div class="login-box">
       <div class="login-header">
         <div class="logo">
@@ -116,23 +126,6 @@
               />
             </el-form-item>
 
-            <el-form-item label="真实姓名" prop="real_name">
-              <el-input
-                v-model="registerForm.real_name"
-                placeholder="请输入真实姓名"
-                :prefix-icon="User"
-                clearable
-              />
-            </el-form-item>
-
-            <el-form-item label="学号" prop="student_id">
-              <el-input
-                v-model="registerForm.student_id"
-                placeholder="请输入学号(学生/教师必填)"
-                clearable
-              />
-            </el-form-item>
-
             <el-form-item label="身份" prop="role">
               <el-select
                 v-model="registerForm.role"
@@ -203,8 +196,6 @@ const registerForm = reactive({
   username: '',
   password: '',
   confirmPassword: '',
-  real_name: '',
-  student_id: '',
   email: '',
   role: ''
 })
@@ -303,7 +294,6 @@ async function handleLogin() {
         // 清除token
         userStore.clearUserInfo()
         sessionStorage.removeItem('token')
-        localStorage.removeItem('token')
         return
       }
 
@@ -358,8 +348,6 @@ async function handleRegister() {
     const registerData: RegisterRequest = {
       username: registerForm.username,
       password: registerForm.password,
-      real_name: registerForm.real_name || undefined,
-      student_id: registerForm.student_id || undefined,
       email: registerForm.email,
       role: registerForm.role
     }
@@ -397,23 +385,127 @@ function getRoleLabel(role: string): string {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+  background-image: url('../../login.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 背景图片遮罩 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+/* 科技网格背景 */
+.login-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background-image:
+    linear-gradient(rgba(64, 158, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(64, 158, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+/* 浮动科技元素 - 书籍/灯泡/网络节点 */
+.tech-decoration {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.tech-element {
+  position: absolute;
+  opacity: 0.15;
+  color: #409eff;
+  animation: float 6s ease-in-out infinite;
+}
+
+.tech-element:nth-child(1) {
+  top: 10%;
+  left: 10%;
+  font-size: 60px;
+  animation-delay: 0s;
+}
+
+.tech-element:nth-child(2) {
+  top: 20%;
+  right: 15%;
+  font-size: 48px;
+  animation-delay: 1s;
+}
+
+.tech-element:nth-child(3) {
+  bottom: 25%;
+  left: 8%;
+  font-size: 52px;
+  animation-delay: 2s;
+}
+
+.tech-element:nth-child(4) {
+  bottom: 15%;
+  right: 10%;
+  font-size: 44px;
+  animation-delay: 3s;
+}
+
+.tech-element:nth-child(5) {
+  top: 40%;
+  left: 5%;
+  font-size: 36px;
+  animation-delay: 4s;
+}
+
+.tech-element:nth-child(6) {
+  top: 35%;
+  right: 5%;
+  font-size: 40px;
+  animation-delay: 5s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
 }
 
 .login-box {
   width: 100%;
   max-width: 480px;
-  background: #fff;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
 .login-header {
   text-align: center;
   padding: 40px 40px 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .logo {
@@ -437,6 +529,7 @@ function getRoleLabel(role: string): string {
 
 .login-tabs {
   padding: 20px 40px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 :deep(.el-tabs__nav-wrap::after) {
@@ -466,7 +559,7 @@ function getRoleLabel(role: string): string {
   height: 44px;
   font-size: 16px;
   font-weight: 500;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #409eff 0%, #764ba2 100%);
   border: none;
   transition: all 0.3s;
 }
@@ -484,11 +577,23 @@ function getRoleLabel(role: string): string {
   text-align: center;
   padding: 20px;
   border-top: 1px solid #ebeef5;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .login-footer p {
   margin: 0;
   font-size: 12px;
   color: #909399;
+}
+
+
+/* 输入框和下拉框半透明背景 */
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 选择器下拉框半透明背景 */
+:deep(.el-select .el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.6) !important;
 }
 </style>

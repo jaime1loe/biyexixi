@@ -1,15 +1,28 @@
-from app.database import engine
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""检查当前用户信息"""
+from app.database import engine, SessionLocal
 from app.models import User
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text, desc
 
-Session = sessionmaker(bind=engine)
-session = Session()
+db = SessionLocal()
+try:
+    # 查询所有用户
+    users = db.query(User).order_by(desc(User.id)).limit(5).all()
+    print(f"Total users in database: {db.query(User).count()}")
+    print("\nRecent users:")
+    for user in users:
+        print(f"  - ID: {user.id}, Username: {user.username}, Role: {user.role}, Email: {user.email}")
 
-# 查找所有用户
-users = session.query(User).limit(5).all()
+    # 查询管理员用户
+    admin_users = db.query(User).filter(User.role == "admin").all()
+    print(f"\nAdmin users: {len(admin_users)}")
+    for user in admin_users:
+        print(f"  - ID: {user.id}, Username: {user.username}")
 
-print("系统中的用户:")
-for user in users:
-    print(f"  ID: {user.id}, 用户名: {user.username}, 邮箱: {user.email}, 角色: {user.role}")
-
-session.close()
+except Exception as e:
+    print(f"Error: {e}")
+    import traceback
+    traceback.print_exc()
+finally:
+    db.close()

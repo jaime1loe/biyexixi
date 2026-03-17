@@ -93,7 +93,7 @@
               </div>
               <div class="stat-content">
                 <div class="stat-value">{{ stats.excellentCount }}</div>
-                <div class="stat-label">优秀(≥90)</div>
+                <div class="stat-label">优秀(>=90)</div>
               </div>
             </div>
           </el-card>
@@ -416,7 +416,7 @@ import {
 import { useUserStore } from '@/store/user'
 import * as echarts from 'echarts'
 
-// 接口定义
+// Interface definitions
 interface Evaluation {
   id: number
   student_id: string
@@ -449,7 +449,7 @@ interface SemesterOption {
   label: string
 }
 
-// 响应式数据
+// Reactive data
 const userStore = useUserStore()
 const activeTab = ref('all')
 const searchKeyword = ref('')
@@ -495,183 +495,170 @@ const stats = ref({
   totalEvaluations: 0
 })
 
-// 计算属性
+// Computed properties
 const userRole = computed(() => userStore.userInfo?.role)
 const isTeacher = computed(() => userRole.value === 'teacher')
 const isStudent = computed(() => userRole.value === 'student')
 const isAdmin = computed(() => userRole.value === 'admin')
 
-// 验证规则
+// Validation rules
 const evaluationRules = {
   student_id: [
-    { required: true, message: '请选择学生', trigger: 'blur' }
+    { required: true, message: 'Please select a student', trigger: 'blur' }
   ],
   course_id: [
-    { required: true, message: '请选择课程', trigger: 'blur' }
+    { required: true, message: 'Please select a course', trigger: 'blur' }
   ],
   semester: [
-    { required: true, message: '请选择学期', trigger: 'blur' }
+    { required: true, message: 'Please select a semester', trigger: 'blur' }
   ],
   score: [
-    { required: true, message: '请输入分数', trigger: 'blur' },
+    { required: true, message: 'Please enter a score', trigger: 'blur' },
     { validator: (rule: any, value: number, callback: any) => {
       if (value < 0 || value > 100) {
-        callback(new Error('分数必须在0-100之间'))
+        callback(new Error('Score must be between 0-100'))
       } else {
         callback()
       }
     }, trigger: 'blur' }
   ],
   teacher_comment: [
-    { required: true, message: '请输入评语', trigger: 'blur' },
-    { min: 5, message: '评语至少5个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter a comment', trigger: 'blur' },
+    { min: 5, message: 'Comment must be at least 5 characters', trigger: 'blur' }
   ]
 }
 
-// 模拟数据初始化函数
+// Mock data initialization
 function initMockData() {
-  // 模拟学生数据
   studentOptions.value = [
-    { id: 'stu001', student_id: '2024001', name: '张三', class_name: '计算机科学1班' },
-    { id: 'stu002', student_id: '2024002', name: '李四', class_name: '计算机科学1班' },
-    { id: 'stu003', student_id: '2024003', name: '王五', class_name: '计算机科学2班' },
-    { id: 'stu004', student_id: '2024004', name: '赵六', class_name: '软件工程1班' },
-    { id: 'stu005', student_id: '2024005', name: '钱七', class_name: '软件工程2班' },
+    { id: 'stu001', student_id: '2024001', name: 'Zhang San', class_name: 'CS Class 1' },
+    { id: 'stu002', student_id: '2024002', name: 'Li Si', class_name: 'CS Class 1' },
+    { id: 'stu003', student_id: '2024003', name: 'Wang Wu', class_name: 'CS Class 2' },
+    { id: 'stu004', student_id: '2024004', name: 'Zhao Liu', class_name: 'SE Class 1' },
+    { id: 'stu005', student_id: '2024005', name: 'Qian Qi', class_name: 'SE Class 2' },
   ]
 
-  // 模拟课程数据
   courseOptions.value = [
-    { id: 1, name: '数据结构', teacher_id: isTeacher.value ? userStore.userInfo?.id : 1 },
-    { id: 2, name: '算法设计', teacher_id: isTeacher.value ? userStore.userInfo?.id : 2 },
-    { id: 3, name: '数据库系统', teacher_id: isTeacher.value ? userStore.userInfo?.id : 3 },
-    { id: 4, name: '操作系统', teacher_id: isTeacher.value ? userStore.userInfo?.id : 4 },
+    { id: 1, name: 'Data Structures', teacher_id: isTeacher.value ? userStore.userInfo?.id : 1 },
+    { id: 2, name: 'Algorithm Design', teacher_id: isTeacher.value ? userStore.userInfo?.id : 2 },
+    { id: 3, name: 'Database Systems', teacher_id: isTeacher.value ? userStore.userInfo?.id : 3 },
+    { id: 4, name: 'Operating Systems', teacher_id: isTeacher.value ? userStore.userInfo?.id : 4 },
   ]
 
-  // 教师只能选择自己教授的课程
   teacherCourseOptions.value = courseOptions.value.filter(course => 
     isTeacher.value ? course.teacher_id === userStore.userInfo?.id : true
   )
 
-  // 模拟评价数据
   const mockEvaluations: Evaluation[] = [
     {
       id: 1,
       student_id: '2024001',
-      student_name: '张三',
+      student_name: 'Zhang San',
       course_id: 1,
-      course_name: '数据结构',
+      course_name: 'Data Structures',
       score: 85.5,
       semester: '2024-2025-1',
       evaluation_date: '2024-12-20',
-      teacher_comment: '表现良好，能够熟练掌握数据结构的核心概念。'
+      teacher_comment: 'Good performance, master core concepts well.'
     },
     {
       id: 2,
       student_id: '2024002',
-      student_name: '李四',
+      student_name: 'Li Si',
       course_id: 1,
-      course_name: '数据结构',
+      course_name: 'Data Structures',
       score: 92.0,
       semester: '2024-2025-1',
       evaluation_date: '2024-12-20',
-      teacher_comment: '优秀学生，算法实现能力突出。'
+      teacher_comment: 'Excellent student, outstanding algorithm implementation skills.'
     },
     {
       id: 3,
       student_id: '2024003',
-      student_name: '王五',
+      student_name: 'Wang Wu',
       course_id: 2,
-      course_name: '算法设计',
+      course_name: 'Algorithm Design',
       score: 78.0,
       semester: '2024-2025-1',
       evaluation_date: '2024-12-15',
-      teacher_comment: '基础知识扎实，但在复杂算法实现上需加强。'
+      teacher_comment: 'Solid foundation, but needs improvement in complex algorithm implementation.'
     },
     {
       id: 4,
       student_id: '2024001',
-      student_name: '张三',
+      student_name: 'Zhang San',
       course_id: 2,
-      course_name: '算法设计',
+      course_name: 'Algorithm Design',
       score: 88.0,
       semester: '2024-2025-1',
       evaluation_date: '2024-12-15',
-      teacher_comment: '算法设计能力较强，能够解决中等难度问题。'
+      teacher_comment: 'Strong algorithm design skills, able to solve medium difficulty problems.'
     },
     {
       id: 5,
       student_id: '2024004',
-      student_name: '赵六',
+      student_name: 'Zhao Liu',
       course_id: 1,
-      course_name: '数据结构',
+      course_name: 'Data Structures',
       score: 95.0,
       semester: '2024-2025-1',
       evaluation_date: '2024-12-20',
-      teacher_comment: '非常优秀，能够独立完成复杂数据结构的设计与实现。'
+      teacher_comment: 'Very excellent, able to independently complete complex data structure design and implementation.'
     },
   ]
 
   return mockEvaluations
 }
 
-// 加载评价列表
+// Load evaluations
 async function loadEvaluations() {
   loading.value = true
   try {
-    // 在实际项目中，这里应该调用API
     const mockEvaluations = initMockData()
     
     let filteredList = mockEvaluations
 
-    // 根据用户角色过滤数据
     if (isStudent.value) {
-      // 学生只能看到自己的成绩
-      filteredList = filteredList.filter(eval => eval.student_id === userStore.userInfo?.student_id)
+      filteredList = filteredList.filter(evalItem => evalItem.student_id === userStore.userInfo?.student_id)
       myScoresList.value = filteredList
     } else if (isTeacher.value) {
-      // 教师可以看到自己给出的评价
-      const myEvals = filteredList.filter(eval => eval.teacher_id === userStore.userInfo?.id)
+      const myEvals = filteredList.filter(evalItem => evalItem.teacher_id === userStore.userInfo?.id)
       myEvaluationsList.value = myEvals
       filteredList = isTeacher.value ? filteredList : mockEvaluations
     }
 
-    // 搜索过滤
     if (searchKeyword.value) {
-      filteredList = filteredList.filter(eval =>
-        eval.student_name.includes(searchKeyword.value) ||
-        eval.student_id.includes(searchKeyword.value)
+      filteredList = filteredList.filter(evalItem =>
+        evalItem.student_name.includes(searchKeyword.value) ||
+        evalItem.student_id.includes(searchKeyword.value)
       )
     }
 
-    // 课程过滤
     if (selectedCourse.value) {
-      filteredList = filteredList.filter(eval => eval.course_id === selectedCourse.value)
+      filteredList = filteredList.filter(evalItem => evalItem.course_id === selectedCourse.value)
     }
 
-    // 学期过滤
     if (selectedSemester.value) {
-      filteredList = filteredList.filter(eval => eval.semester === selectedSemester.value)
+      filteredList = filteredList.filter(evalItem => evalItem.semester === selectedSemester.value)
     }
 
     total.value = filteredList.length
 
-    // 分页处理
     const startIndex = (currentPage.value - 1) * pageSize.value
     const endIndex = startIndex + pageSize.value
     evaluationsList.value = filteredList.slice(startIndex, endIndex)
 
-    // 更新统计信息
     updateStats(filteredList)
 
   } catch (error: any) {
-    ElMessage.error('加载评价数据失败')
-    console.error('加载评价数据失败:', error)
+    ElMessage.error('Failed to load evaluation data')
+    console.error('Failed to load evaluation data:', error)
   } finally {
     loading.value = false
   }
 }
 
-// 更新统计信息
+// Update statistics
 function updateStats(evaluations: Evaluation[]) {
   if (evaluations.length === 0) {
     stats.value = {
@@ -685,7 +672,7 @@ function updateStats(evaluations: Evaluation[]) {
   }
 
   const uniqueStudents = new Set(evaluations.map(e => e.student_id))
-  const totalScore = evaluations.reduce((sum, eval) => sum + eval.score, 0)
+  const totalScore = evaluations.reduce((sum, evalItem) => sum + evalItem.score, 0)
   const excellent = evaluations.filter(e => e.score >= 90).length
   const fail = evaluations.filter(e => e.score < 60).length
 
@@ -698,24 +685,24 @@ function updateStats(evaluations: Evaluation[]) {
   }
 }
 
-// 刷新数据
+// Refresh data
 function refreshData() {
   loadEvaluations()
 }
 
-// 搜索处理
+// Search handler
 function handleSearch() {
   currentPage.value = 1
   loadEvaluations()
 }
 
-// 筛选条件变化处理
+// Filter change handler
 function handleFilterChange() {
   currentPage.value = 1
   loadEvaluations()
 }
 
-// 排序处理
+// Sort change handler
 function handleSortChange({ prop, order }: { prop: string, order: string }) {
   if (prop === 'score') {
     evaluationsList.value.sort((a, b) => {
@@ -726,7 +713,7 @@ function handleSortChange({ prop, order }: { prop: string, order: string }) {
   }
 }
 
-// 添加评价
+// Add evaluation
 function handleAddEvaluation() {
   editingEvaluation.value = false
   evaluationForm.value = {
@@ -739,7 +726,7 @@ function handleAddEvaluation() {
   evaluationDialogVisible.value = true
 }
 
-// 编辑评价
+// Edit evaluation
 function handleEdit(row: Evaluation) {
   editingEvaluation.value = true
   evaluationForm.value = {
@@ -752,36 +739,35 @@ function handleEdit(row: Evaluation) {
   evaluationDialogVisible.value = true
 }
 
-// 删除评价
+// Delete evaluation
 async function handleDelete(row: Evaluation) {
   try {
     await ElMessageBox.confirm(
-      `确定要删除学生"${row.student_name}"在"${row.course_name}"课程中的评价吗？`,
-      '提示',
+      `Are you sure you want to delete the evaluation for student "${row.student_name}" in "${row.course_name}"?`,
+      'Confirm',
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
         type: 'warning'
       }
     )
     
-    // 在实际项目中，这里应该调用API删除
-    ElMessage.success('删除成功')
+    ElMessage.success('Deleted successfully')
     loadEvaluations()
   } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+      ElMessage.error('Failed to delete')
     }
   }
 }
 
-// 查看详情
+// View details
 function handleViewDetails(row: Evaluation) {
   currentEvaluation.value = row
   detailDialogVisible.value = true
 }
 
-// 提交评价表单
+// Submit evaluation form
 async function handleSubmitEvaluation() {
   if (!evaluationFormRef.value) return
   
@@ -790,20 +776,19 @@ async function handleSubmitEvaluation() {
 
   submitting.value = true
   try {
-    // 在实际项目中，这里应该调用API提交
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    ElMessage.success(editingEvaluation.value ? '评价更新成功' : '评价添加成功')
+    ElMessage.success(editingEvaluation.value ? 'Evaluation updated successfully' : 'Evaluation added successfully')
     evaluationDialogVisible.value = false
     loadEvaluations()
   } catch (error: any) {
-    ElMessage.error(error.response?.data?.detail || '提交失败')
+    ElMessage.error(error.response?.data?.detail || 'Submission failed')
   } finally {
     submitting.value = false
   }
 }
 
-// 根据分数获取标签类型
+// Get score type based on score
 function getScoreType(score: number): string {
   if (score >= 90) return 'success'
   if (score >= 80) return ''
@@ -811,18 +796,18 @@ function getScoreType(score: number): string {
   return 'danger'
 }
 
-// 格式化学期显示
+// Format semester display
 function formatSemester(semester: string): string {
   const semesterMap: Record<string, string> = {
-    '2024-2025-1': '2024-2025学年第一学期',
-    '2024-2025-2': '2024-2025学年第二学期',
-    '2025-2026-1': '2025-2026学年第一学期',
-    '2025-2026-2': '2025-2026学年第二学期',
+    '2024-2025-1': '2024-2025 First Semester',
+    '2024-2025-2': '2024-2025 Second Semester',
+    '2025-2026-1': '2025-2026 First Semester',
+    '2025-2026-2': '2025-2026 Second Semester',
   }
   return semesterMap[semester] || semester
 }
 
-// 格式化日期
+// Format date
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
   const year = date.getFullYear()
@@ -831,31 +816,30 @@ function formatDate(dateStr: string): string {
   return `${year}-${month}-${day}`
 }
 
-// 截断评语显示
+// Truncate comment display
 function truncateComment(comment: string, maxLength = 50): string {
   if (comment.length <= maxLength) return comment
   return comment.substring(0, maxLength) + '...'
 }
 
-// 初始化图表
+// Initialize chart
 function initChart() {
   const chartDom = document.getElementById('scoreDistributionChart')
   if (!chartDom) return
 
   const chart = echarts.init(chartDom)
   
-  // 模拟成绩分布数据
   const scoreRanges = [
-    { range: '0-59', label: '不及格', count: 2 },
-    { range: '60-69', label: '及格', count: 5 },
-    { range: '70-79', label: '中等', count: 8 },
-    { range: '80-89', label: '良好', count: 12 },
-    { range: '90-100', label: '优秀', count: 6 },
+    { range: '0-59', label: 'Fail', count: 2 },
+    { range: '60-69', label: 'Pass', count: 5 },
+    { range: '70-79', label: 'Average', count: 8 },
+    { range: '80-89', label: 'Good', count: 12 },
+    { range: '90-100', label: 'Excellent', count: 6 },
   ]
 
   const option = {
     title: {
-      text: '成绩分布',
+      text: 'Score Distribution',
       left: 'center'
     },
     tooltip: {
@@ -867,15 +851,15 @@ function initChart() {
     xAxis: {
       type: 'category',
       data: scoreRanges.map(item => item.range),
-      name: '分数区间'
+      name: 'Score Range'
     },
     yAxis: {
       type: 'value',
-      name: '人数'
+      name: 'Count'
     },
     series: [
       {
-        name: '学生人数',
+        name: 'Student Count',
         type: 'bar',
         data: scoreRanges.map(item => item.count),
         itemStyle: {
@@ -900,7 +884,6 @@ function initChart() {
 
   chart.setOption(option)
   
-  // 监听窗口大小变化
   window.addEventListener('resize', () => {
     chart.resize()
   })
@@ -909,7 +892,6 @@ function initChart() {
 onMounted(() => {
   loadEvaluations()
   
-  // 初始化图表
   if (isTeacher.value) {
     setTimeout(initChart, 300)
   }

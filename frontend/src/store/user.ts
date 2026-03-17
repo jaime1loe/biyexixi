@@ -31,24 +31,20 @@ export const useUserStore = defineStore('user', () => {
       sessionStorage.removeItem('isAdminLogin')
     }
     
-    // 使用 localStorage 确保登录状态持久化
-    localStorage.setItem('userInfo', JSON.stringify(info))
-    sessionStorage.setItem('userInfo', JSON.stringify(info)) // 同时存储到sessionStorage
+    // 只使用 sessionStorage，关闭浏览器后自动失效
+    sessionStorage.setItem('userInfo', JSON.stringify(info))
   }
 
   function setToken(newToken: string) {
     token.value = newToken
-    // 使用 localStorage 确保登录状态持久化
-    localStorage.setItem('token', newToken)
-    sessionStorage.setItem('token', newToken) // 同时存储到sessionStorage
+    // 只使用 sessionStorage，关闭浏览器后自动失效
+    sessionStorage.setItem('token', newToken)
   }
 
   function logout() {
     userInfo.value = null
     token.value = ''
     isAdminLogin.value = false
-    localStorage.removeItem('userInfo')
-    localStorage.removeItem('token')
     sessionStorage.removeItem('userInfo')
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('isAdminLogin')
@@ -64,12 +60,9 @@ export const useUserStore = defineStore('user', () => {
   }
 
   function initFromStorage() {
-    // 优先从sessionStorage读取，如果没有则从localStorage读取
-    let storedUser = sessionStorage.getItem('userInfo')
-    let storedToken = sessionStorage.getItem('token')
-    
-    if (!storedUser) storedUser = localStorage.getItem('userInfo')
-    if (!storedToken) storedToken = localStorage.getItem('token')
+    // 只从sessionStorage读取，关闭浏览器后自动失效
+    const storedUser = sessionStorage.getItem('userInfo')
+    const storedToken = sessionStorage.getItem('token')
     
     if (storedUser) {
       userInfo.value = JSON.parse(storedUser)

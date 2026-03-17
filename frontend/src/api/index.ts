@@ -8,9 +8,8 @@ const request = axios.create({
 
 request.interceptors.request.use(
   (config) => {
-    // 优先从sessionStorage读取token，如果没有则从localStorage读取
-    let token = sessionStorage.getItem('token')
-    if (!token) token = localStorage.getItem('token')
+    // 只从sessionStorage读取token，关闭浏览器后自动失效
+    const token = sessionStorage.getItem('token')
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`

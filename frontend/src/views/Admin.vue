@@ -157,6 +157,11 @@
         </el-tab-pane>
 
         <!-- 知识库管理 -->
+        <!-- 通知管理 -->
+        <el-tab-pane label="通知管理" name="notifications">
+          <NotificationsManagementSimple />
+        </el-tab-pane>
+
         <el-tab-pane label="知识库管理" name="knowledge">
           <div class="tab-header">
             <el-button type="primary" @click="showUploadDialog = true">
@@ -238,6 +243,7 @@ import { Upload } from '@element-plus/icons-vue'
 import { chatApi as questionsApi } from '@/api/chat'
 import { authApi as usersApi } from '@/api/auth'
 import { knowledgeApi } from '@/api/knowledge'
+import NotificationsManagementSimple from '@/components/admin/NotificationsManagementSimple.vue'
 
 const activeTab = ref('questions')
 

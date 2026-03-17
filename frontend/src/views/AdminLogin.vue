@@ -127,7 +127,6 @@ async function handleAdminLogin() {
         // 清除token
         userStore.clearUserInfo()
         sessionStorage.removeItem('token')
-        localStorage.removeItem('token')
         return
       }
 
@@ -154,7 +153,6 @@ async function handleAdminLogin() {
       // 清除token
       userStore.clearUserInfo()
       sessionStorage.removeItem('token')
-      localStorage.removeItem('token')
     }
   } catch (error: any) {
     console.error('管理员登录失败:', error)
@@ -173,11 +171,31 @@ function gotoNormalLogin() {
 <style scoped>
 .admin-login-container {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5222d 0%, #cf1322 100%);
+  background-image: url('../../ad_login.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景图片遮罩 */
+.admin-login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background: rgba(245, 34, 45, 0.15);
+  backdrop-filter: blur(2px);
 }
 
 .admin-login-box {
@@ -187,6 +205,8 @@ function gotoNormalLogin() {
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(245, 34, 45, 0.3);
   overflow: hidden;
+  position: relative;
+  z-index: 10;
 }
 
 .admin-login-header {
@@ -271,5 +291,10 @@ function gotoNormalLogin() {
 
 .admin-login-footer p:first-child {
   font-weight: 500;
+}
+
+/* 输入框半透明背景 */
+:deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.6) !important;
 }
 </style>

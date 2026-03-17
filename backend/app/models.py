@@ -153,5 +153,9 @@ class Notification(Base):
     file_path = Column(String(255), comment="附件路径")
     publisher = Column(String(100), comment="发布单位")
     views = Column(Integer, default=0, comment="浏览次数")
-    created_at = Column(DateTime, default=datetime.now, comment="发布时间")
+    # 定时发布字段
+    schedule_time = Column(DateTime, comment="定时发布时间")
+    status = Column(String(20), default="published", comment="状态: published=已发布, scheduled=待定时, draft=草稿")
+    created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
+    published_at = Column(DateTime, comment="实际发布时间")

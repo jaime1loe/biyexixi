@@ -267,9 +267,9 @@ const paginatedNotifications = computed(() => {
 async function loadNotifications() {
   loading.value = true
   try {
-    const data = await notificationApi.getList()
+    const data = await notificationApi.getList({ include_scheduled: false })
     notifications.value = data || []
-    
+
     // 提取分类列表
     categories.value = [...new Set(data.map(item => item.category).filter(Boolean))] as string[]
   } catch (error) {
@@ -285,6 +285,7 @@ async function loadNotifications() {
         publisher: '武汉科技大学教务处',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        published_at: new Date().toISOString(),
         views: 0
       },
       {
@@ -296,6 +297,7 @@ async function loadNotifications() {
         publisher: '武汉科技大学办公室',
         created_at: new Date(Date.now() - 86400000).toISOString(),
         updated_at: new Date(Date.now() - 86400000).toISOString(),
+        published_at: new Date(Date.now() - 86400000).toISOString(),
         views: 0
       }
     ]

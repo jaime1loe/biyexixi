@@ -227,6 +227,8 @@ class NotificationBase(BaseModel):
     category: Optional[str] = None
     is_important: int = 0
     publisher: Optional[str] = None
+    schedule_time: Optional[datetime] = None
+    status: str = "published"
 
 
 class NotificationCreate(NotificationBase):
@@ -234,11 +236,24 @@ class NotificationCreate(NotificationBase):
     pass
 
 
+class NotificationUpdate(BaseModel):
+    """通知更新模型"""
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    content: Optional[str] = None
+    detail_content: Optional[str] = None
+    category: Optional[str] = None
+    is_important: Optional[int] = None
+    publisher: Optional[str] = None
+    schedule_time: Optional[datetime] = None
+    status: Optional[str] = None
+
+
 class NotificationResponse(NotificationBase):
     """通知响应模型"""
     id: int
     file_path: Optional[str] = None
     views: Optional[int] = 0
+    published_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 

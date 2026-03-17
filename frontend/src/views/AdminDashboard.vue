@@ -82,6 +82,11 @@
           <KnowledgeManagement />
         </div>
 
+        <!-- 通知管理 -->
+        <div v-else-if="activeTab === 'notifications'" class="tab-content">
+          <NotificationsManagement />
+        </div>
+
         <!-- 其他功能 -->
         <div v-else class="tab-content">
           <el-alert
@@ -106,6 +111,7 @@ import QuestionsManagement from '@/components/admin/QuestionsManagement.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import KnowledgeManagement from '@/components/admin/KnowledgeManagement.vue'
 import ProfileChangeReview from '@/components/admin/ProfileChangeReview.vue'
+import NotificationsManagement from '@/components/admin/NotificationsManagementSimple.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -230,6 +236,13 @@ onMounted(() => {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
 }
 
 .user-info {

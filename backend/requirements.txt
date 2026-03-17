@@ -16,6 +16,9 @@ python-multipart>=0.0.6
 # File handling
 aiofiles>=23.2.1
 
+# Task scheduling
+apscheduler>=3.10.0
+
 # AI related - fixed version conflicts
 langchain>=0.1.0
 langchain-community>=0.1.0

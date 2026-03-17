@@ -108,9 +108,8 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   document.title = `${to.meta.title || '高校知识库智能答疑系统'}`
 
-  // 优先从sessionStorage读取token，如果没有则从localStorage读取
-  let token = sessionStorage.getItem('token')
-  if (!token) token = localStorage.getItem('token')
+  // 只从sessionStorage读取token，关闭浏览器后自动失效
+  const token = sessionStorage.getItem('token')
   
   const requiresAuth = to.meta.requiresAuth !== false
   const requiresAdmin = to.meta.requiresAdmin === true
@@ -122,8 +121,6 @@ router.beforeEach((to, _from, next) => {
     console.log('强制清除token,跳转到登录页')
     sessionStorage.removeItem('token')
     sessionStorage.removeItem('userInfo')
-    localStorage.removeItem('token')
-    localStorage.removeItem('userInfo')
     // 重定向到登录页,不带force参数
     next({ path: '/login', query: {} })
     return
@@ -134,9 +131,8 @@ router.beforeEach((to, _from, next) => {
   if (to.path === '/login' && token) {
     console.log('已登录用户访问登录页，跳转到对应首页')
 
-    // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
-    let userInfoStr = sessionStorage.getItem('userInfo')
-    if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
+    // 只从sessionStorage读取用户信息
+    const userInfoStr = sessionStorage.getItem('userInfo')
     const userInfo = JSON.parse(userInfoStr || '{}')
 
     // 检查是否是管理员
@@ -159,9 +155,8 @@ router.beforeEach((to, _from, next) => {
 
   // 需要管理员权限的页面
   if (requiresAdmin && token) {
-    // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
-    let userInfoStr = sessionStorage.getItem('userInfo')
-    if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
+    // 只从sessionStorage读取用户信息
+    const userInfoStr = sessionStorage.getItem('userInfo')
     const userInfo = JSON.parse(userInfoStr || '{}')
     
     if (userInfo.role !== 'admin') {
@@ -173,9 +168,8 @@ router.beforeEach((to, _from, next) => {
 
   // 管理员不能访问普通用户页面（除了管理后台、欢迎页面和个人中心）
   if (token) {
-    // 优先从sessionStorage读取用户信息，如果没有则从localStorage读取
-    let userInfoStr = sessionStorage.getItem('userInfo')
-    if (!userInfoStr) userInfoStr = localStorage.getItem('userInfo')
+    // 只从sessionStorage读取用户信息
+    const userInfoStr = sessionStorage.getItem('userInfo')
     const userInfo = JSON.parse(userInfoStr || '{}')
 
     // 如果是管理员，且不是访问管理后台相关页面、欢迎页面或个人中心，则重定向到管理后台
