@@ -23,6 +23,19 @@ export interface CategoryStatistics {
   categories: Array<{ category: string; count: number }>
 }
 
+export interface Activity {
+  id: number
+  user_id: number
+  username: string
+  user_role: string
+  action_type: string
+  target_type?: string
+  target_id?: number
+  target_name?: string
+  details?: string
+  created_at: string
+}
+
 export const statisticsApi = {
   getOverview: () => {
     return request.get<any, StatisticsOverview>('/statistics/overview')
@@ -46,6 +59,12 @@ export const statisticsApi = {
 
   getPopularQuestions: (limit: number = 8) => {
     return request.get<any, any[]>('/statistics/top-questions', {
+      params: { limit }
+    })
+  },
+
+  getRecentActivities: (limit: number = 10) => {
+    return request.get<any, Activity[]>('/activities/recent', {
       params: { limit }
     })
   }

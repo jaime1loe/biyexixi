@@ -46,6 +46,16 @@ export const chatApi = {
 
   submitFeedback: (data: FeedbackRequest) => {
     return request.post('/feedback/', data)
+  },
+
+  // 导出CSV
+  exportCSV: () => {
+    return request.get('/questions/export/csv', { responseType: 'blob' })
+  },
+
+  // 导出Excel
+  exportExcel: () => {
+    return request.get('/questions/export/excel', { responseType: 'blob' })
   }
 }
 

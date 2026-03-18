@@ -226,8 +226,60 @@ async function handleDelete(item: HistoryItem) {
   }
 }
 
-function handleExport() {
-  ElMessage.success('导出功能开发中...')
+async function handleExport() {
+  try {
+    const { value } = await ElMessageBox.confirm(
+      '请选择导出格式',
+      '导出问答历史',
+      {
+        confirmButtonText: 'Excel',
+        cancelButtonText: 'CSV',
+        distinguishCancelAndClose: true,
+        type: 'info'
+      }
+    )
+
+    // 用户点击了Excel
+    exportFile('excel')
+  } catch (action) {
+    if (action === 'cancel') {
+      // 用户点击了CSV
+      exportFile('csv')
+    }
+    // action === 'close' 表示点击了关闭按钮，不做任何操作
+  }
+}
+
+async function exportFile(format: 'excel' | 'csv') {
+  try {
+    ElMessage.info(`正在导出${format.toUpperCase()}文件...`)
+
+    let response
+    if (format === 'excel') {
+      response = await chatApi.exportExcel()
+    } else {
+      response = await chatApi.exportCSV()
+    }
+
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    link.href = url
+
+    // 生成文件名
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    link.setAttribute('download', `问答历史_${timestamp}.${format === 'excel' ? 'xlsx' : 'csv'}`)
+
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    ElMessage.success('导出成功！')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败，请稍后重试')
+  }
 }
 
 function formatTime(timestamp: string): string {

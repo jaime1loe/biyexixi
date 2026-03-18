@@ -167,6 +167,8 @@
               v-for="(item, index) in stats.recentActivity"
               :key="index"
               class="activity-item"
+              :class="{ 'clickable': (item.target_type === 'notification' && item.target_id) || (item.target_type === 'knowledge' && item.target_id) }"
+              @click="handleActivityClick(item)"
             >
               <div class="activity-icon" :class="`activity-${item.type}`">
                 <el-icon v-if="item.type === 'upload'"><Upload /></el-icon>
@@ -195,6 +197,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import {
   DataAnalysis,
   Refresh,
@@ -214,6 +217,8 @@ import {
 } from '@element-plus/icons-vue'
 import { statisticsApi, StatisticsOverview, DailyStatistics, CategoryStatistics } from '@/api/dashboard'
 
+const router = useRouter()
+
 interface DashboardStats {
   totalQuestions: number
   totalAnswers: number
@@ -226,6 +231,8 @@ interface DashboardStats {
     role: string
     action: string
     target?: string
+    target_type?: string
+    target_id?: number
     time: string
   }>
 }
@@ -325,79 +332,47 @@ async function loadTopQuestions() {
 async function loadRecentActivity() {
   activityLoading.value = true
   try {
-    // 模拟数据 - 实际应该从API获取
-    setTimeout(() => {
-      const now = new Date()
-      stats.value.recentActivity = [
-        {
-          type: 'upload',
-          user: '张教授',
-          role: '老师',
-          action: '上传了',
-          target: '《高等数学复习资料》',
-          time: formatRelativeTime(now.getTime() - 2 * 60 * 1000)
-        },
-        {
-          type: 'notification',
-          user: '李管理员',
-          role: '管理员',
-          action: '新增了',
-          target: '《期中考试安排通知》',
-          time: formatRelativeTime(now.getTime() - 15 * 60 * 1000)
-        },
-        {
-          type: 'question',
-          user: '王同学',
-          role: '学生',
-          action: '提出了问题',
-          target: '如何计算定积分？',
-          time: formatRelativeTime(now.getTime() - 30 * 60 * 1000)
-        },
-        {
-          type: 'rating',
-          user: '刘同学',
-          role: '学生',
-          action: '评价了',
-          target: '高等数学课程',
-          time: formatRelativeTime(now.getTime() - 45 * 60 * 1000)
-        },
-        {
-          type: 'upload',
-          user: '赵老师',
-          role: '老师',
-          action: '上传了',
-          target: '《大学英语听力材料》',
-          time: formatRelativeTime(now.getTime() - 60 * 60 * 1000)
-        },
-        {
-          type: 'notification',
-          user: '孙管理员',
-          role: '管理员',
-          action: '发布了',
-          target: '图书馆开放时间调整公告',
-          time: formatRelativeTime(now.getTime() - 2 * 60 * 60 * 1000)
-        },
-        {
-          type: 'question',
-          user: '陈同学',
-          role: '学生',
-          action: '收藏了',
-          target: '数据结构学习笔记',
-          time: formatRelativeTime(now.getTime() - 3 * 60 * 60 * 1000)
-        },
-        {
-          type: 'upload',
-          user: '周教授',
-          role: '老师',
-          action: '更新了',
-          target: '《数据结构实验指导书》',
-          time: formatRelativeTime(now.getTime() - 4 * 60 * 60 * 1000)
-        }
-      ]
-      activityLoading.value = false
-    }, 500)
+    const data = await statisticsApi.getRecentActivities(10)
+    stats.value.recentActivity = data.map(item => {
+      // 根据 action_type 和 target_type 确定活动类型
+      let type = 'other'
+      let action = item.action_type
+      let target = item.target_name
+
+      if (item.target_type === 'notification') {
+        type = 'notification'
+        action = '发布了通知'
+      } else if (item.target_type === 'knowledge' && item.action_type === '上传文件') {
+        type = 'upload'
+        action = '上传了文件'
+      }
+
+      // 根据角色转换
+      const roleMap: { [key: string]: string } = {
+        'admin': '管理员',
+        'teacher': '老师',
+        'student': '学生'
+      }
+      const role = roleMap[item.user_role] || item.user_role
+
+      // 格式化时间
+      const time = formatRelativeTime(new Date(item.created_at).getTime())
+
+      return {
+        type,
+        user: item.username,
+        role,
+        action,
+        target,
+        target_type: item.target_type,
+        target_id: item.target_id,
+        time
+      }
+    })
   } catch (error) {
     console.error('加载最近活动失败:', error)
+    stats.value.recentActivity = []
+  } finally {
     activityLoading.value = false
   }
 }
@@ -444,6 +419,19 @@ function handleRefresh() {
 
 function handleDateChange() {
   loadStats()
+}
+
+function handleActivityClick(activity: any) {
+  // 根据活动类型跳转到相应页面
+  if (activity.target_type === 'notification' && activity.target_id) {
+    // 跳转到通知详情页
+    router.push(`/notification/${activity.target_id}`)
+  } else if (activity.target_type === 'knowledge' && activity.target_id) {
+    // 跳转到知识库页面（知识库目前没有详情页，跳转到列表页）
+    router.push('/knowledge')
+  } else {
+    ElMessage.info('该活动暂不支持跳转')
+  }
 }
 
 function getWeekDay(dateStr: string): string {
@@ -749,6 +737,21 @@ onMounted(() => {
   justify-content: center;
   color: #fff;
   font-size: 18px;
+}
+
+.activity-item.clickable {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.activity-item.clickable:hover {
+  background-color: #f5f7fa;
+  transform: translateX(4px);
+}
+
+.activity-item.clickable:hover .activity-target {
+  color: #409eff;
+  text-decoration: underline;
 }
 
 .activity-content {

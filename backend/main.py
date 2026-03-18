@@ -17,7 +17,7 @@ from sqlalchemy.exc import SQLAlchemyError
 # 使用相对导入避免路径问题
 from app.config import settings
 from app.database import engine, Base, SessionLocal
-from app.routers import auth, questions, knowledge, feedback, statistics, users, favorites, notifications, campus, profile_changes
+from app.routers import auth, questions, knowledge, feedback, statistics, users, favorites, notifications, campus, profile_changes, activities, schedule, grades, evaluations
 from app.exceptions import (
     sqlalchemy_exception_handler,
     http_exception_handler,
@@ -122,6 +122,10 @@ app.include_router(favorites.router, prefix="/api/favorites", tags=["收藏"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["通知"])
 app.include_router(campus.router, prefix="/api/campus", tags=["校园服务"])
 app.include_router(profile_changes.router, tags=["信息修改"])
+app.include_router(activities.router, prefix="/api/activities", tags=["活动记录"])
+app.include_router(schedule.router, prefix="/api", tags=["课表"])
+app.include_router(grades.router, prefix="/api/grades", tags=["成绩管理"])
+app.include_router(evaluations.router, prefix="/api", tags=["课程评价"])
 
 
 @app.get("/", summary="健康检查")

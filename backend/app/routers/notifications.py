@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models import Notification
 from app.schemas import NotificationCreate, NotificationUpdate, NotificationResponse
 from app.dependencies import get_current_admin_user, get_current_user
+from app.routers.activities import log_activity
 
 router = APIRouter()
 
@@ -48,6 +49,17 @@ async def create_notification(
     db.add(db_notification)
     db.commit()
     db.refresh(db_notification)
+    
+    # 记录活动
+    log_activity(
+        db=db,
+        user_id=current_user.id,
+        action_type="发布通知",
+        target_type="notification",
+        target_id=db_notification.id,
+        target_name=db_notification.title,
+        details=f"发布了通知：{db_notification.title}"
+    )
 
     return db_notification
 

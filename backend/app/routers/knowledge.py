@@ -13,6 +13,7 @@ from app.schemas import KnowledgeCreate, KnowledgeResponse, ReviewAction
 from app.models import User
 from app.dependencies import get_current_admin_user, get_current_user
 from app.config import settings
+from app.routers.activities import log_activity
 
 router = APIRouter()
 
@@ -103,6 +104,18 @@ async def upload_knowledge_file(
     db.add(db_knowledge)
     db.commit()
     db.refresh(db_knowledge)
+    
+    # 记录活动
+    action_text = f"上传了文件：{file_name}" if file else "添加了知识"
+    log_activity(
+        db=db,
+        user_id=current_user.id,
+        action_type="上传文件",
+        target_type="knowledge",
+        target_id=db_knowledge.id,
+        target_name=db_knowledge.title,
+        details=action_text
+    )
 
     return db_knowledge
 

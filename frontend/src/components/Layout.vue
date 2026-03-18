@@ -39,7 +39,7 @@
                   <el-icon><Reading /></el-icon>
                   学生评价查询
                 </el-dropdown-item>
-                <el-dropdown-item command="/dashboard" v-if="isTeacher || isAdmin">
+                <el-dropdown-item command="/dashboard">
                   <el-icon><DataAnalysis /></el-icon>
                   数据统计
                 </el-dropdown-item>
@@ -106,7 +106,8 @@ import {
   Reading,
   DataAnalysis,
   School,
-  Bell
+  Bell,
+  Monitor
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 
