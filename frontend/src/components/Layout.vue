@@ -35,10 +35,6 @@
                   <el-icon><Star /></el-icon>
                   我的收藏
                 </el-dropdown-item>
-                <el-dropdown-item command="/evaluations" v-if="isTeacher || isAdmin">
-                  <el-icon><Reading /></el-icon>
-                  学生评价查询
-                </el-dropdown-item>
                 <el-dropdown-item command="/dashboard">
                   <el-icon><DataAnalysis /></el-icon>
                   数据统计
@@ -70,7 +66,7 @@
                 </el-dropdown-item>
                 <el-dropdown-item command="settings">
                   <el-icon><Setting /></el-icon>
-                  系统设置
+                  课程设置
                 </el-dropdown-item>
                 <el-dropdown-item divided command="logout">
                   <el-icon><SwitchButton /></el-icon>

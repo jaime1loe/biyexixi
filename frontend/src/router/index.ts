@@ -45,12 +45,6 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '知识库', requiresAuth: true }
   },
   {
-    path: '/evaluations',
-    name: 'Evaluations',
-    component: () => import('@/views/Evaluations.vue'),
-    meta: { title: '学生评价查询', requiresAuth: true }
-  },
-  {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
@@ -84,7 +78,7 @@ const routes: RouteRecordRaw[] = [
     path: '/settings',
     name: 'Settings',
     component: () => import('@/views/Settings.vue'),
-    meta: { title: '系统设置', requiresAuth: true }
+    meta: { title: '课程设置', requiresAuth: true }
   },
   {
     path: '/notification/:id',

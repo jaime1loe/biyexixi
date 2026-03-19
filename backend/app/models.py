@@ -35,6 +35,7 @@ class User(Base):
     courses = relationship("Course", back_populates="teacher")
     grades_as_student = relationship("Grade", foreign_keys="Grade.student_id", back_populates="student", cascade="all, delete-orphan")
     grades_as_teacher = relationship("Grade", foreign_keys="Grade.teacher_id", back_populates="teacher", cascade="all, delete-orphan")
+    course_selections = relationship("CourseSelection", back_populates="student", cascade="all, delete-orphan")
 
 
 class ProfileChangeRequest(Base):
@@ -218,6 +219,7 @@ class Course(Base):
     credits = Column(Float, comment="学分")
     hours = Column(Integer, comment="学时")
     course_type = Column(String(20), default="必修", comment="课程类型：必修/选修/实践")
+    capacity = Column(Integer, default=100, comment="课程容量")
     created_at = Column(DateTime, default=datetime.now, comment="创建时间")
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")
 
@@ -226,6 +228,7 @@ class Course(Base):
     grades = relationship("Grade", back_populates="course", cascade="all, delete-orphan")
     evaluations = relationship("CourseEvaluation", back_populates="course", cascade="all, delete-orphan")
     teacher = relationship("User", back_populates="courses")
+    selections = relationship("CourseSelection", back_populates="course", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Course {self.course_code} - {self.course_name}>"
@@ -388,3 +391,31 @@ class CourseEvaluation(Base):
 
     def __repr__(self):
         return f"<CourseEvaluation student_id={self.student_id}, course_id={self.course_id}, rating={self.overall_rating}>"
+
+
+class CourseSelection(Base):
+    """选课表"""
+    __tablename__ = "course_selections"
+
+    id = Column(Integer, primary_key=True, index=True, comment="选课ID")
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True, comment="学生ID")
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False, index=True, comment="课程ID")
+    semester = Column(String(20), nullable=False, index=True, comment="学期：2024-2025-1")
+    status = Column(String(20), default="selected", comment="状态：selected=已选, dropped=退选, completed=已完成")
+
+    # 选课时间
+    selected_at = Column(DateTime, default=datetime.now, comment="选课时间")
+    dropped_at = Column(DateTime, comment="退选时间")
+
+    # 唯一约束：同一学生同一学期同一课程只能选一次
+    __table_args__ = (
+        {'comment': '选课表'},
+    )
+
+    # 关系
+    student = relationship("User", back_populates="course_selections")
+    course = relationship("Course")
+
+    def __repr__(self):
+        return f"<CourseSelection student_id={self.student_id}, course_id={self.course_id}, status={self.status}>"
+

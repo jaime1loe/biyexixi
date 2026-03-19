@@ -17,6 +17,15 @@
         active-text-color="#ff7875"
         @select="handleTabChange"
       >
+        <el-sub-menu index="courses">
+          <template #title>
+            <el-icon><Reading /></el-icon>
+            <span>课程管理</span>
+          </template>
+          <el-menu-item index="courses-list">课程列表</el-menu-item>
+          <el-menu-item index="courses-schedule">排课管理</el-menu-item>
+        </el-sub-menu>
+
         <el-sub-menu index="questions">
           <template #title>
             <el-icon><ChatDotRound /></el-icon>
@@ -24,7 +33,7 @@
           </template>
           <el-menu-item index="questions-list">问题列表</el-menu-item>
         </el-sub-menu>
-        
+
         <el-sub-menu index="users">
           <template #title>
             <el-icon><User /></el-icon>
@@ -33,7 +42,7 @@
           <el-menu-item index="users-list">用户列表</el-menu-item>
           <el-menu-item index="roles">角色管理</el-menu-item>
         </el-sub-menu>
-        
+
         <el-sub-menu index="knowledge">
           <template #title>
             <el-icon><Files /></el-icon>
@@ -42,15 +51,10 @@
           <el-menu-item index="knowledge-list">文档列表</el-menu-item>
           <el-menu-item index="knowledge-review">审核管理</el-menu-item>
         </el-sub-menu>
-        
+
         <el-menu-item index="notifications">
           <el-icon><Bell /></el-icon>
           <span>通知管理</span>
-        </el-menu-item>
-        
-        <el-menu-item index="settings">
-          <el-icon><Setting /></el-icon>
-          <span>系统设置</span>
         </el-menu-item>
       </el-menu>
     </div>
@@ -62,10 +66,20 @@
         <div style="text-align: right; margin-bottom: 16px;">
           <el-button type="danger" @click="logout">退出登录</el-button>
         </div>
-        <!-- 问题列表 -->
-        <div v-if="activeTab === 'questions-list'" class="tab-content">
-          <QuestionsManagement />
-        </div>
+      <!-- 课程列表 -->
+      <div v-if="activeTab === 'courses-list'" class="tab-content">
+        <CourseManagement />
+      </div>
+
+      <!-- 排课管理 -->
+      <div v-else-if="activeTab === 'courses-schedule'" class="tab-content">
+        <ScheduleManagement />
+      </div>
+
+      <!-- 问题列表 -->
+      <div v-else-if="activeTab === 'questions-list'" class="tab-content">
+        <QuestionsManagement />
+      </div>
 
         <!-- 用户列表 -->
         <div v-else-if="activeTab === 'users-list'" class="tab-content">
@@ -105,13 +119,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Setting, ChatDotRound, User, Files, Bell } from '@element-plus/icons-vue'
+import { Setting, ChatDotRound, User, Files, Bell, Reading } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import QuestionsManagement from '@/components/admin/QuestionsManagement.vue'
 import UsersManagement from '@/components/admin/UsersManagement.vue'
 import KnowledgeManagement from '@/components/admin/KnowledgeManagement.vue'
 import ProfileChangeReview from '@/components/admin/ProfileChangeReview.vue'
 import NotificationsManagement from '@/components/admin/NotificationsManagementSimple.vue'
+import CourseManagement from '@/components/admin/CourseManagement.vue'
+import ScheduleManagement from '@/components/admin/ScheduleManagement.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -120,14 +136,15 @@ const activeTab = ref('questions-list')
 
 const currentTabName = computed(() => {
   const tabMap: Record<string, string> = {
+    'courses-list': '课程列表',
+    'courses-schedule': '排课管理',
     'questions-list': '问题列表',
     'users-list': '用户列表',
     'profile-change-review': '信息审核',
     'roles': '角色管理',
     'knowledge-list': '文档列表',
     'knowledge-review': '审核管理',
-    'notifications': '通知管理',
-    'settings': '系统设置'
+    'notifications': '通知管理'
   }
   return tabMap[activeTab.value] || '管理后台'
 })

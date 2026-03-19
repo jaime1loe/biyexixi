@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: '',
   timeout: 30000
 })
 
@@ -10,14 +10,19 @@ request.interceptors.request.use(
   (config) => {
     // 只从sessionStorage读取token，关闭浏览器后自动失效
     const token = sessionStorage.getItem('token')
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
       console.log('请求携带token:', token.substring(0, 20) + '...')
     } else {
       console.log('请求未携带token，用户可能未登录')
     }
-    
+
+    // 确保URL以/api开头
+    if (config.url && !config.url.startsWith('/api')) {
+      config.url = '/api' + config.url
+    }
+
     console.log('请求配置:', config.method?.toUpperCase(), config.url)
     return config
   },

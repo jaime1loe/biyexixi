@@ -311,9 +311,9 @@ class ClassroomResponse(BaseModel):
     building: str
     room_number: str
     capacity: int
-    classroom_type: str
+    room_type: str
     equipment: Optional[str] = None
-    status: Optional[str] = None
+    is_available: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -342,9 +342,16 @@ class CourseResponse(BaseModel):
     id: int
     course_code: str
     course_name: str
-    credits: float
+    credits: Optional[float] = None
+    hours: Optional[int] = None
+    course_type: Optional[str] = None
+    capacity: Optional[int] = None
+    department: Optional[str] = None
     teacher_name: Optional[str] = None
     description: Optional[str] = None
+    teacher_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -355,9 +362,11 @@ class ScheduleCreate(BaseModel):
     classroom_id: int
     course_id: int
     day_of_week: int = Field(..., ge=1, le=7)
-    start_time: str
-    end_time: str
+    period: int = Field(..., ge=1, le=5)
+    week_start: int = Field(default=1, ge=1)
+    week_end: int = Field(default=18, ge=1)
     semester: str
+    class_name: Optional[str] = None
 
 
 class ScheduleUpdate(BaseModel):
@@ -365,9 +374,11 @@ class ScheduleUpdate(BaseModel):
     classroom_id: Optional[int] = None
     course_id: Optional[int] = None
     day_of_week: Optional[int] = Field(None, ge=1, le=7)
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
+    period: Optional[int] = Field(None, ge=1, le=5)
+    week_start: Optional[int] = Field(None, ge=1)
+    week_end: Optional[int] = Field(None, ge=1)
     semester: Optional[str] = None
+    class_name: Optional[str] = None
 
 
 class ScheduleResponse(BaseModel):
@@ -376,11 +387,15 @@ class ScheduleResponse(BaseModel):
     classroom_id: int
     course_id: int
     day_of_week: int
-    start_time: str
-    end_time: str
+    period: int
+    week_start: int
+    week_end: int
     semester: str
+    class_name: Optional[str] = None
     classroom: Optional[ClassroomResponse] = None
     course: Optional[CourseResponse] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -534,3 +549,65 @@ class CourseEvaluationStats(BaseModel):
     total_evaluations: int
     average_ratings: dict
     recommendation_rate: float
+
+
+# ========== 选课相关 ==========
+class CourseSelectionCreate(BaseModel):
+    """选课创建模型"""
+    course_id: int = Field(..., description="课程ID")
+    semester: str = Field(default="2024-2025-2", description="学期")
+
+
+class CourseSelectionResponse(BaseModel):
+    """选课响应模型"""
+    id: int
+    student_id: int
+    course_id: int
+    course_code: str
+    course_name: str
+    teacher_id: Optional[int] = None
+    teacher_name: Optional[str] = None
+    semester: str
+    status: str
+    selected_at: datetime
+    dropped_at: Optional[datetime] = None
+    course_type: Optional[str] = None
+    credits: Optional[float] = None
+    hours: Optional[int] = None
+    department: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CourseWithSelectionStatus(BaseModel):
+    """带选课状态的课程模型"""
+    id: int
+    course_code: str
+    course_name: str
+    teacher_id: Optional[int] = None
+    teacher_name: Optional[str] = None
+    department: Optional[str] = None
+    credits: Optional[float] = None
+    hours: Optional[int] = None
+    course_type: Optional[str] = None
+    capacity: Optional[int] = None
+    selected_count: int = 0
+    remaining_count: int = 0
+    is_selected: bool = False
+    selection_status: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CourseManagementRequest(BaseModel):
+    """课程开设/管理请求模型"""
+    course_name: str = Field(..., min_length=1, max_length=100, description="课程名称")
+    course_code: str = Field(..., min_length=1, max_length=50, description="课程代码")
+    teacher_id: int = Field(..., description="授课教师ID")
+    department: Optional[str] = Field(None, description="开课院系")
+    credits: Optional[float] = Field(None, ge=0, description="学分")
+    hours: Optional[int] = Field(None, ge=0, description="学时")
+    course_type: str = Field("必修", description="课程类型：必修/选修/实践")
+

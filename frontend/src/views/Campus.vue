@@ -35,6 +35,13 @@
           <h3>课程评价</h3>
           <p>{{ currentUser?.role === 'teacher' ? '查看课程评价' : '评价我的课程' }}</p>
         </div>
+
+        <!-- 学生选课 -->
+        <div class="campus-item" @click="navigateToCourseSelection">
+          <el-icon size="48" color="#f56c6c"><List /></el-icon>
+          <h3>学生选课</h3>
+          <p>{{ currentUser?.role === 'teacher' ? '课程管理' : '选择课程' }}</p>
+        </div>
       </div>
     </el-card>
 
@@ -586,6 +593,163 @@
       </el-tabs>
     </el-dialog>
 
+    <!-- 选课对话框 -->
+    <el-dialog v-model="courseSelectionVisible" title="学生选课" width="90%">
+      <el-tabs v-model="courseSelectionTab">
+        <!-- 学生：可选课程 -->
+        <el-tab-pane v-if="currentUser?.role === 'student'" label="可选课程" name="available">
+          <el-form :inline="true" class="search-form">
+            <el-form-item label="学期">
+              <el-select v-model="courseSelectionSemester" placeholder="请选择学期" style="width: 150px" @change="loadAvailableCourses">
+                <el-option label="2024-2025-1" value="2024-2025-1" />
+                <el-option label="2024-2025-2" value="2024-2025-2" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="课程类型">
+              <el-select v-model="courseSearchForm.course_type" placeholder="全部类型" clearable style="width: 120px">
+                <el-option label="必修" value="必修" />
+                <el-option label="选修" value="选修" />
+                <el-option label="实践" value="实践" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="院系">
+              <el-input v-model="courseSearchForm.department" placeholder="输入院系" clearable style="width: 150px" />
+            </el-form-item>
+            <el-form-item label="搜索">
+              <el-input v-model="courseSearchForm.search" placeholder="课程名称或代码" clearable style="width: 180px" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="loadAvailableCourses">查询</el-button>
+              <el-button @click="loadAvailableCourses">刷新</el-button>
+            </el-form-item>
+          </el-form>
+
+          <el-table v-loading="courseSelectionLoading" :data="availableCourses" stripe>
+            <el-table-column prop="course_code" label="课程代码" width="120" />
+            <el-table-column prop="course_name" label="课程名称" width="200" />
+            <el-table-column prop="teacher_name" label="授课教师" width="100" />
+            <el-table-column prop="department" label="院系" width="120" />
+            <el-table-column prop="course_type" label="类型" width="80">
+              <template #default="{ row }">
+                <el-tag :type="row.course_type === '必修' ? 'primary' : row.course_type === '选修' ? 'success' : 'info'">
+                  {{ row.course_type }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="credits" label="学分" width="80" />
+            <el-table-column prop="hours" label="学时" width="80" />
+            <el-table-column label="选课人数" width="100">
+              <template #default="{ row }">
+                {{ row.selected_count || 0 }}/{{ row.capacity || 100 }}
+              </template>
+            </el-table-column>
+            <el-table-column label="剩余名额" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.remaining_count > 0 ? 'success' : 'danger'">
+                  {{ row.remaining_count || 0 }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="row.is_selected" type="success">已选</el-tag>
+                <el-tag v-else type="info">未选</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120" fixed="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="!row.is_selected"
+                  type="primary"
+                  size="small"
+                  :disabled="row.remaining_count <= 0"
+                  @click="selectCourseForSelection(row)"
+                >
+                  选课
+                </el-button>
+                <el-tag v-else type="success" size="small">已选择</el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <!-- 学生：我的选课 -->
+        <el-tab-pane v-if="currentUser?.role === 'student'" label="我的选课" name="selected">
+          <el-button @click="loadMySelections" :loading="courseSelectionLoading" style="margin-bottom: 20px;">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+
+          <el-table v-loading="courseSelectionLoading" :data="mySelections" stripe>
+            <el-table-column prop="course_code" label="课程代码" width="120" />
+            <el-table-column prop="course_name" label="课程名称" width="200" />
+            <el-table-column prop="teacher_name" label="授课教师" width="100" />
+            <el-table-column prop="semester" label="学期" width="120" />
+            <el-table-column prop="course_type" label="类型" width="80" />
+            <el-table-column prop="credits" label="学分" width="80" />
+            <el-table-column prop="status" label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 'selected' ? 'success' : 'info'">
+                  {{ row.status === 'selected' ? '已选' : '已退选' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="selected_at" label="选课时间" width="180">
+              <template #default="{ row }">
+                {{ new Date(row.selected_at).toLocaleString('zh-CN') }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="row.status === 'selected'"
+                  type="danger"
+                  size="small"
+                  @click="dropCourse(row.id)"
+                >
+                  退选
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+
+        <!-- 教师：课程管理 -->
+        <el-tab-pane v-if="currentUser?.role === 'teacher'" label="我的课程" name="teacher">
+          <el-form :inline="true">
+            <el-form-item label="学期">
+              <el-select v-model="courseSelectionSemester" placeholder="请选择学期" style="width: 150px" @change="loadTeacherCourseSelections">
+                <el-option label="2024-2025-1" value="2024-2025-1" />
+                <el-option label="2024-2025-2" value="2024-2025-2" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="loadTeacherCourseSelections">查询</el-button>
+            </el-form-item>
+          </el-form>
+
+          <el-table v-loading="courseSelectionLoading" :data="availableCourses" stripe>
+            <el-table-column prop="course_code" label="课程代码" width="120" />
+            <el-table-column prop="course_name" label="课程名称" width="200" />
+            <el-table-column prop="course_type" label="类型" width="80">
+              <template #default="{ row }">
+                <el-tag :type="row.course_type === '必修' ? 'primary' : 'success'">
+                  {{ row.course_type }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="credits" label="学分" width="80" />
+            <el-table-column prop="hours" label="学时" width="80" />
+            <el-table-column prop="selection_count" label="选课人数" width="100">
+              <template #default="{ row }">
+                <el-tag type="info">{{ row.selection_count }}人</el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
+
     <!-- 提交评价对话框 -->
     <el-dialog v-model="submitEvaluationVisible" title="提交课程评价" width="600px">
       <el-form :model="evaluationForm" label-width="120px">
@@ -776,12 +940,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { School, Document, Reading, Bell, Search, Refresh, Monitor, User, Setting, OfficeBuilding, Lock } from '@element-plus/icons-vue'
+import { School, Document, Reading, Bell, Search, Refresh, Monitor, User, Setting, OfficeBuilding, Lock, List } from '@element-plus/icons-vue'
 import { campusApi, Grade, Course, StudentWithGrade, GradeUpload, Seat, SeatStats } from '@/api/campus'
 import { evaluationApi, CourseEvaluation, CourseEvaluationStats } from '@/api/evaluation'
 import { scheduleApi, Classroom, Schedule } from '@/api/schedule'
+import { courseSelectionApi, CourseSelection, CourseWithSelectionStatus, CourseManagementRequest } from '@/api/courseSelection'
 import { useUserStore } from '@/store/user'
 import type { Grade as GradeType } from '@/api/campus'
 
@@ -796,6 +961,7 @@ const classroomDetailVisible = ref(false)
 const gradeUploadVisible = ref(false)
 const seatDetailVisible = ref(false)
 const myReservationsVisible = ref(false)
+const courseSelectionVisible = ref(false)
 
 // 加载状态
 const classroomLoading = ref(false)
@@ -806,6 +972,7 @@ const classroomScheduleLoading = ref(false)
 const seatsLoading = ref(false)
 const seatReserving = ref(false)
 const myReservationsLoading = ref(false)
+const courseSelectionLoading = ref(false)
 
 // 数据
 const emptyClassrooms = ref<Classroom[]>([])
@@ -840,6 +1007,21 @@ const evaluationForm = ref({
   is_recommended: 1
 })
 const submitEvaluationVisible = ref(false)
+
+// 选课相关
+const availableCourses = ref<CourseWithSelectionStatus[]>([])
+const mySelections = ref<CourseSelection[]>([])
+const courseSelectionTab = ref('available')
+const courseSelectionSemester = ref('2024-2025-2')
+const courseSelectionForm = ref({
+  course_id: 0,
+  semester: '2024-2025-2'
+})
+const courseSearchForm = ref({
+  course_type: undefined as string | undefined,
+  department: undefined as string | undefined,
+  search: ''
+})
 
 // 座位相关
 const seats = ref<any[]>([])
@@ -932,7 +1114,19 @@ const navigateToEvaluations = () => {
   if (currentUser.value?.role === 'student') {
     loadMyEvaluations()
   } else if (currentUser.value?.role === 'teacher') {
-    loadTeacherEvaluationStats()
+    // 教师登录时，切换到teacher tab
+    evaluationTab.value = 'teacher'
+  }
+}
+
+const navigateToCourseSelection = () => {
+  courseSelectionVisible.value = true
+  if (currentUser.value?.role === 'student') {
+    loadAvailableCourses()
+    loadMySelections()
+  } else if (currentUser.value?.role === 'teacher') {
+    // 教师登录时，切换到teacher tab
+    courseSelectionTab.value = 'teacher'
   }
 }
 
@@ -1540,6 +1734,90 @@ const loadTeacherEvaluationStats = async () => {
   }
 }
 
+// 选课相关函数
+const loadAvailableCourses = async () => {
+  courseSelectionLoading.value = true
+  try {
+    const response = await courseSelectionApi.getAvailableCourses({
+      semester: courseSelectionSemester.value,
+      ...courseSearchForm.value
+    })
+    availableCourses.value = response
+  } catch (error: any) {
+    console.error('加载可选课程失败:', error)
+    ElMessage.error(error.response?.data?.detail || '加载失败')
+  } finally {
+    courseSelectionLoading.value = false
+  }
+}
+
+const loadMySelections = async () => {
+  courseSelectionLoading.value = true
+  try {
+    const response = await courseSelectionApi.getMySelections({
+      semester: courseSelectionSemester.value
+    })
+    mySelections.value = response
+  } catch (error: any) {
+    console.error('加载我的选课失败:', error)
+    ElMessage.error(error.response?.data?.detail || '加载失败')
+  } finally {
+    courseSelectionLoading.value = false
+  }
+}
+
+const selectCourseForSelection = async (course: CourseWithSelectionStatus) => {
+  try {
+    await courseSelectionApi.selectCourse({
+      course_id: course.id,
+      semester: courseSelectionSemester.value
+    })
+    ElMessage.success('选课成功')
+    await loadAvailableCourses()
+    await loadMySelections()
+  } catch (error: any) {
+    console.error('选课失败:', error)
+    ElMessage.error(error.response?.data?.detail || '选课失败')
+  }
+}
+
+const dropCourse = async (selectionId: number) => {
+  ElMessageBox.confirm('确定要退选该课程吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await courseSelectionApi.dropCourse(selectionId)
+      ElMessage.success('退选成功')
+      await loadAvailableCourses()
+      await loadMySelections()
+    } catch (error: any) {
+      console.error('退选失败:', error)
+      ElMessage.error(error.response?.data?.detail || '退选失败')
+    }
+  })
+}
+
+const loadTeacherCourseSelections = async () => {
+  courseSelectionLoading.value = true
+  try {
+    const response = await courseSelectionApi.getTeacherCourses(courseSelectionSemester.value)
+    availableCourses.value = response.map(c => ({
+      ...c,
+      course_code: c.course_code || '',
+      course_name: c.course_name,
+      is_selected: true,
+      selection_status: 'selected'
+    }))
+  } catch (error: any) {
+    console.error('加载教师课程失败:', error)
+    ElMessage.error(error.response?.data?.detail || '加载失败')
+  } finally {
+    courseSelectionLoading.value = false
+  }
+}
+
 // 辅助方法
 
 // 辅助方法
@@ -1564,6 +1842,46 @@ const getWeekdayLabel = (day: number): string => {
   const item = weekdays.value.find(w => w.value === day)
   return item?.label || ''
 }
+
+// 监听课程评价对话框打开
+watch(evaluationsVisible, async (newValue) => {
+  if (newValue && currentUser.value?.role === 'teacher') {
+    // 等待对话框渲染完成后再加载
+    setTimeout(() => {
+      // 确保tab已经是teacher
+      if (evaluationTab.value === 'teacher') {
+        loadTeacherEvaluationStats()
+      }
+    }, 200)
+  }
+})
+
+// 监听选课对话框打开
+watch(courseSelectionVisible, async (newValue) => {
+  if (newValue && currentUser.value?.role === 'teacher') {
+    // 等待对话框渲染完成后再加载
+    setTimeout(() => {
+      // 确保tab已经是teacher
+      if (courseSelectionTab.value === 'teacher') {
+        loadTeacherCourseSelections()
+      }
+    }, 200)
+  }
+})
+
+// 监听评价Tab切换
+watch(evaluationTab, (newValue) => {
+  if (newValue === 'teacher' && currentUser.value?.role === 'teacher' && evaluationsVisible.value) {
+    loadTeacherEvaluationStats()
+  }
+})
+
+// 监听选课Tab切换
+watch(courseSelectionTab, (newValue) => {
+  if (newValue === 'teacher' && currentUser.value?.role === 'teacher' && courseSelectionVisible.value) {
+    loadTeacherCourseSelections()
+  }
+})
 
 onMounted(() => {
   // 页面加载时可以预加载一些数据
