@@ -197,3 +197,22 @@ export const getPeriods = (): Promise<AxiosResponse<{ periods: Period[] }>> => {
 export const getWeekdays = (): Promise<AxiosResponse<{ days: Weekday[] }>> => {
   return request.get('/weekdays')
 }
+
+// 统一导出对象
+export const scheduleApi = {
+  getClassrooms,
+  getClassroom,
+  getClassroomSchedule,
+  getClassroomStatus,
+  getAvailableClassrooms,
+  getCourses,
+  getCourse,
+  getCourseSchedule,
+  getSchedules,
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+  getBuildings,
+  getPeriods,
+  getWeekdays
+}
